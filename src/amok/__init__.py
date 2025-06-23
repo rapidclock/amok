@@ -1,0 +1,1 @@
+"""amok package init."""
