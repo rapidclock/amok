@@ -1,6 +1,7 @@
 """Action agent for amok."""
 
-from amok import AgentSettings, BaseAgent
+from amok.base import BaseAgent
+from amok.lib import AgentSettings
 
 
 class ActionAgent(BaseAgent):
