@@ -11,6 +11,7 @@ from openai.types.chat import (
 )
 
 from amok.lib import AgentResponse, AgentSettings
+from amok.utils import surround_with_tags
 
 
 class BaseAgent(ABC):
@@ -54,7 +55,7 @@ class BaseAgent(ABC):
         """Compose the system prompt."""
         pass
 
-    def run(self) -> AgentResponse:
+    def run(self, body: str | None) -> AgentResponse:
         """Execute the agent's main logic.
 
         This method composes the user and system prompts, sends them to the
@@ -73,6 +74,9 @@ class BaseAgent(ABC):
         """
         user_prompt = self.compose_user_prompt()
         system_prompt = self.compose_system_prompt()
+        if body:
+            # If a body is provided, append it to the user prompt with appropriate tags.
+            user_prompt = surround_with_tags(user_prompt, "BODY")
         if not self.openai_client:
             raise ValueError("OpenAI client not initialized.")
         completion: ChatCompletion = self.openai_client.chat.completions.create(

@@ -17,7 +17,17 @@ The name is a play on the image of LLMs as little minions running amok.
    ```
 2. Install dependencies:
    ```sh
-   pip install -r requirements.txt
-   # or, if using pyproject.toml:
-   pip install .
+   pip install -e .
    ```
+
+
+# Running Tests
+
+To Run tests, install `pytest` and `pytest-cov` first.
+```shell
+# With Pytest configured in the pyproject.toml, you can run:
+pytest .
+
+# Optional
+pytest --cov=amok --cov-report=term-missing tests
+```

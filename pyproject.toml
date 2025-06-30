@@ -73,9 +73,21 @@ addopts = "--cov=amok --cov-report=term-missing"
 testpaths = ["tests"]
 
 [tool.coverage.run]
+source = ["src"]
 branch = true
-source = ["src/amok"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+]
 
 [tool.coverage.report]
 show_missing = true
 skip_covered = true
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "@abstractmethod",
+]

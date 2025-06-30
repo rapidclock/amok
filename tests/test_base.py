@@ -49,10 +49,47 @@ def test_run_success(monkeypatch):
     agent.openai_client.chat.completions.create = MagicMock(
         return_value=mock_completion
     )
-    resp = agent.run()
+    resp = agent.run(body="test body")
     assert isinstance(resp, AgentResponse)
     assert resp.thought == "think"
     assert resp.response == "response"
+    agent.openai_client.chat.completions.create.assert_called_once_with(
+        model=settings.model,
+        messages=[
+            {"role": "system", "content": "system prompt"},
+            {"role": "user", "content": "<BODY>user prompt</BODY>"},
+        ],
+        temperature=settings.temperature,
+        max_tokens=settings.max_tokens,
+        stream=False,
+    )
+
+
+def test_run_success_no_body(monkeypatch):
+    """Test run method when no body is provided."""
+    settings = make_settings()
+    agent = DummyAgent(settings)
+    mock_completion = MagicMock()
+    mock_choice = MagicMock()
+    mock_choice.message.content = "<thought>think</thought>response"
+    mock_completion.choices = [mock_choice]
+    agent.openai_client.chat.completions.create = MagicMock(
+        return_value=mock_completion
+    )
+    resp = agent.run(body=None)
+    assert isinstance(resp, AgentResponse)
+    assert resp.thought == "think"
+    assert resp.response == "response"
+    agent.openai_client.chat.completions.create.assert_called_once_with(
+        model=settings.model,
+        messages=[
+            {"role": "system", "content": "system prompt"},
+            {"role": "user", "content": "user prompt"},
+        ],
+        temperature=settings.temperature,
+        max_tokens=settings.max_tokens,
+        stream=False,
+    )
 
 
 def test_run_no_openai_client():
@@ -60,7 +97,7 @@ def test_run_no_openai_client():
     agent = DummyAgent(settings)
     agent.openai_client = None
     with pytest.raises(ValueError, match="OpenAI client not initialized"):
-        agent.run()
+        agent.run(body="test body")
 
 
 def test_run_no_response(monkeypatch):
@@ -72,7 +109,46 @@ def test_run_no_response(monkeypatch):
         return_value=mock_completion
     )
     with pytest.raises(ValueError, match="No response from the model"):
-        agent.run()
+        agent.run(body="test body")
+
+
+def test_run_no_completion():
+    """Test run method when completion is None."""
+    settings = make_settings()
+    agent = DummyAgent(settings)
+    agent.openai_client.chat.completions.create = MagicMock(return_value=None)
+    with pytest.raises(ValueError, match="No response from the model"):
+        agent.run(body="test body")
+
+
+def test_run_no_message():
+    """Test run method when completion has no message."""
+    settings = make_settings()
+    agent = DummyAgent(settings)
+    mock_completion = MagicMock()
+    mock_choice = MagicMock()
+    mock_choice.message = None
+    mock_completion.choices = [mock_choice]
+    agent.openai_client.chat.completions.create = MagicMock(
+        return_value=mock_completion
+    )
+    with pytest.raises(ValueError, match="No response from the model"):
+        agent.run(body="test body")
+
+
+def test_run_no_message_content():
+    """Test run method when message has no content."""
+    settings = make_settings()
+    agent = DummyAgent(settings)
+    mock_completion = MagicMock()
+    mock_choice = MagicMock()
+    mock_choice.message.content = None
+    mock_completion.choices = [mock_choice]
+    agent.openai_client.chat.completions.create = MagicMock(
+        return_value=mock_completion
+    )
+    with pytest.raises(ValueError, match="No response from the model"):
+        agent.run(body="test body")
 
 
 def test_parse_response_with_thought():
@@ -94,3 +170,35 @@ def test_parse_response_multiple_thoughts():
     response, thought = BaseAgent._parse_response(content)
     assert thought == "first"
     assert "second" in response
+
+
+def test_parse_response_empty_content():
+    """Test parsing response with empty content."""
+    content = ""
+    response, thought = BaseAgent._parse_response(content)
+    assert response == ""
+    assert thought is None
+
+
+def test_parse_response_only_thought():
+    """Test parsing response with only thought tags."""
+    content = "<thought>just thinking</thought>"
+    response, thought = BaseAgent._parse_response(content)
+    assert response == ""
+    assert thought == "just thinking"
+
+
+def test_parse_response_thought_with_newlines():
+    """Test parsing response with thought containing newlines."""
+    content = "<thought>multi\nline\nthought</thought>response content"
+    response, thought = BaseAgent._parse_response(content)
+    assert response == "response content"
+    assert thought == "multi\nline\nthought"
+
+
+def test_parse_response_nested_tags():
+    """Test parsing response with nested or similar tags."""
+    content = "before <thought>thinking about <other>tags</other></thought> after"
+    response, thought = BaseAgent._parse_response(content)
+    assert response == "before  after"
+    assert thought == "thinking about <other>tags</other>"

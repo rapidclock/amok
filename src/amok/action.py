@@ -18,6 +18,7 @@ class ActionAgent(BaseAgent):
     def read_cfg(self) -> None:
         """Read the agent's configuration."""
         # Implementation for reading configuration settings goes here.
+        pass
 
     def compose_user_prompt(self) -> str:
         """Compose the user prompt."""
