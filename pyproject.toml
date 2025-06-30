@@ -3,7 +3,7 @@ name = "amok"
 version = "0.1.0"
 description = "A Python project using OpenAI API, TOML, and JSON parsing."
 authors = [
-    { name = "Your Name", email = "your.email@example.com" }
+    { name = "rapidclock", email = "rapidclock@users.noreply.github.com" }
 ]
 readme = "README.md"
 requires-python = ">=3.12"
@@ -17,7 +17,8 @@ dependencies = [
 dev = [
     "black",
     "ruff",
-    "pytest"
+    "pytest",
+    "pytest-cov",
 ]
 
 [build-system]
@@ -26,6 +27,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.black]
 line-length = 88
+target-version = ['py312']
 
 [tool.ruff]
 # Only lint these directories
@@ -51,8 +53,29 @@ select = [
 ]
 ignore = [
     "D211",
-    "D213"
+    "D213",
+    "D203" # Docs check that clashes with Black.
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101"]
+"tests/*" = [
+    "S101", # Avoid using `assert` statements in tests.
+    "D", # Ignore docstring conventions.
+    "PLR2004" # Ignore Magic Numbers Warnings.
+]
+"src/bin/*" = [
+    "ALL" # Ignore all rules for bin scripts. These are just for quick testing.
+]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "--cov=amok --cov-report=term-missing"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["src/amok"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true

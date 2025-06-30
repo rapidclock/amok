@@ -1,13 +1,20 @@
-# .pre-commit-config.yaml
 repos:
   - repo: https://github.com/psf/black
     rev: 24.4.2
     hooks:
       - id: black
         language_version: python3
-        args: ["--fast"]
+        args: [ "--fast" ]
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: v0.12.0
     hooks:
       - id: ruff-check
-        args: ["--fix"]
+        args: [ "--fix" ]
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-ast
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace

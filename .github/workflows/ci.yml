@@ -2,12 +2,12 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [ "main", "foundation" ]
   pull_request:
-    branches: [main]
+    branches: [ "main", "foundation" ]
 
 jobs:
-  lint-and-test:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,10 +18,11 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install black ruff pytest
-      - name: Check formatting with Black
-        run: black --check .
+          pip install black ruff pytest pytest-cov
+          pip install -r requirements.txt
       - name: Lint with Ruff
-        run: ruff check .
-      - name: Run tests
-        run: pytest || true
+        run: ruff check src/ tests/
+      - name: Check formatting with Black
+        run: black --check src/ tests/
+      - name: Run tests with pytest
+        run: pytest --cov=amok --cov-report=term-missing
