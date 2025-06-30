@@ -1,4 +1,4 @@
-from amok.lib import AgentResponse, AgentSettings
+from amok.lib import ActionAgentSettings, AgentResponse, AgentSettings
 
 
 def test_agent_settings_required_fields():
@@ -55,3 +55,72 @@ def test_agent_response_repr_and_eq():
     assert r1 == r2
     assert r1 != r3
     assert "AgentResponse" in repr(r1)
+
+
+def test_action_agent_settings_defaults():
+    """Test ActionAgentSettings with default values."""
+    s = ActionAgentSettings(base_url="http://localhost", model="test-model")
+    assert s.thinking_mode is True
+    assert s.description == ""
+    assert s.commands == []
+
+
+def test_action_agent_settings_custom_values():
+    """Test ActionAgentSettings with custom values."""
+    commands = ["command1", "command2"]
+    s = ActionAgentSettings(
+        base_url="http://test",
+        model="test-model",
+        thinking_mode=False,
+        description="Test description",
+        commands=commands,
+        temperature=0.3,
+        max_tokens=500,
+    )
+    assert s.thinking_mode is False
+    assert s.description == "Test description"
+    assert s.commands == commands
+    assert s.temperature == 0.3
+    assert s.max_tokens == 500
+
+
+def test_action_agent_settings_post_init_none_commands():
+    """Test ActionAgentSettings __post_init__ when commands is None."""
+    s = ActionAgentSettings(base_url="http://test", model="test-model", commands=None)
+    assert s.commands == []
+
+
+def test_action_agent_settings_post_init_existing_commands():
+    """Test ActionAgentSettings __post_init__ when commands already exist."""
+    commands = ["existing_command"]
+    s = ActionAgentSettings(
+        base_url="http://test", model="test-model", commands=commands
+    )
+    assert s.commands == commands
+
+
+def test_action_agent_settings_inheritance():
+    """Test that ActionAgentSettings inherits from AgentSettings."""
+    s = ActionAgentSettings(
+        base_url="http://test", model="test-model", api_key="custom-key"
+    )
+    assert isinstance(s, AgentSettings)
+    assert s.api_key == "custom-key"
+    assert s.base_url == "http://test"
+    assert s.model == "test-model"
+
+
+def test_action_agent_settings_repr_and_eq():
+    """Test ActionAgentSettings repr and equality."""
+    s1 = ActionAgentSettings(
+        base_url="http://test", model="test-model", description="desc"
+    )
+    s2 = ActionAgentSettings(
+        base_url="http://test", model="test-model", description="desc"
+    )
+    s3 = ActionAgentSettings(
+        base_url="http://test", model="test-model", description="different"
+    )
+    assert s1 == s2
+    assert s1 != s3
+    assert "ActionAgentSettings" in repr(s1)

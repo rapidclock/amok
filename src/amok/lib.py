@@ -16,6 +16,20 @@ class AgentSettings:
 
 
 @dataclass
+class ActionAgentSettings(AgentSettings):
+    """Settings for an Action Agent."""
+
+    thinking_mode: bool = True
+    description: str = ""
+    commands: list[str] = None
+
+    def __post_init__(self):
+        """Initialize commands list if None."""
+        if self.commands is None:
+            self.commands = []
+
+
+@dataclass
 class AgentResponse:
     """Response from an agent."""
 

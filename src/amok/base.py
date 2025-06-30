@@ -2,6 +2,7 @@
 
 import re
 from abc import ABC, abstractmethod
+from typing import Self
 
 from openai import OpenAI
 from openai.types.chat import (
@@ -23,6 +24,7 @@ class BaseAgent(ABC):
     max_tokens: int
     ssl_verify: bool
     stream: bool
+    body_tag: str = "BODY"
 
     def __init__(self, settings: AgentSettings) -> None:
         """Initialize the agent with the given settings.
@@ -40,8 +42,9 @@ class BaseAgent(ABC):
         self.ssl_verify = settings.ssl_verify
         self.stream = False
 
+    @classmethod
     @abstractmethod
-    def read_cfg(self) -> None:
+    def read_cfg(cls) -> Self:
         """Read the agent's configuration."""
         pass
 
@@ -72,11 +75,7 @@ class BaseAgent(ABC):
                         returns no response.
 
         """
-        user_prompt = self.compose_user_prompt()
-        system_prompt = self.compose_system_prompt()
-        if body:
-            # If a body is provided, append it to the user prompt with appropriate tags.
-            user_prompt = surround_with_tags(user_prompt, "BODY")
+        system_prompt, user_prompt = self.generate_prompts(body)
         if not self.openai_client:
             raise ValueError("OpenAI client not initialized.")
         completion: ChatCompletion = self.openai_client.chat.completions.create(
@@ -100,6 +99,37 @@ class BaseAgent(ABC):
         response, thought = self._parse_response(content)
         return AgentResponse(thought=thought, response=response)
 
+    def generate_prompts(self, body: str | None) -> tuple[str, str]:
+        """Generate the system and user prompts for the given body.
+
+        This method processes the prompts and returns them as a tuple.
+        It is used to prepare the prompts before sending them to the OpenAI API.
+
+        Args:
+            body: The body content to include in the user prompt.
+
+        Returns:
+            A tuple containing the system prompt and the user prompt.
+
+        """
+        system_prompt = self.compose_system_prompt()
+        user_prompt = self.compose_user_prompt() + "\n" + self.process_body(body)
+        return system_prompt, user_prompt
+
+    def process_body(self, body: str | None) -> str:
+        """Process the body content to ensure it prepped to be added to the user prompt.
+
+        Args:
+            body: The body content to process.
+
+        Returns:
+            The processed body content ready to be included in the user prompt.
+
+        """
+        if body is None:
+            return ""
+        return surround_with_tags(body, self.body_tag)
+
     @staticmethod
     def _parse_response(content: str) -> tuple[str, str | None]:
         """Parse the model response to separate thought from the response.
@@ -113,7 +143,7 @@ class BaseAgent(ABC):
             A tuple containing the response and the thought.
 
         """
-        thought_pattern = r"<thought>(.*?)</thought>"
+        thought_pattern = r"<think>(.*?)</think>"
         match = re.search(thought_pattern, content, re.DOTALL)
         if match:
             # The thought is the content of the first capture group.

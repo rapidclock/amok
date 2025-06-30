@@ -12,4 +12,8 @@ def surround_with_tags(text: str, tag: str) -> str:
         The text surrounded by the specified tags.
 
     """
-    return f"<{tag}>{text}</{tag}>"
+    if text is None or text.strip() == "":
+        return ""
+    if tag is None or tag.strip() == "":
+        raise ValueError("Tag cannot be None or empty.")
+    return f"<{tag.upper()}>\n{text.strip()}\n</{tag.upper()}>"

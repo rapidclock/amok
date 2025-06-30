@@ -44,7 +44,7 @@ def test_run_success(monkeypatch):
     agent = DummyAgent(settings)
     mock_completion = MagicMock()
     mock_choice = MagicMock()
-    mock_choice.message.content = "<thought>think</thought>response"
+    mock_choice.message.content = "<think>think</think>response"
     mock_completion.choices = [mock_choice]
     agent.openai_client.chat.completions.create = MagicMock(
         return_value=mock_completion
@@ -57,7 +57,7 @@ def test_run_success(monkeypatch):
         model=settings.model,
         messages=[
             {"role": "system", "content": "system prompt"},
-            {"role": "user", "content": "<BODY>user prompt</BODY>"},
+            {"role": "user", "content": "user prompt\n<BODY>\ntest body\n</BODY>"},
         ],
         temperature=settings.temperature,
         max_tokens=settings.max_tokens,
@@ -71,7 +71,7 @@ def test_run_success_no_body(monkeypatch):
     agent = DummyAgent(settings)
     mock_completion = MagicMock()
     mock_choice = MagicMock()
-    mock_choice.message.content = "<thought>think</thought>response"
+    mock_choice.message.content = "<think>think</think>response"
     mock_completion.choices = [mock_choice]
     agent.openai_client.chat.completions.create = MagicMock(
         return_value=mock_completion
@@ -84,7 +84,7 @@ def test_run_success_no_body(monkeypatch):
         model=settings.model,
         messages=[
             {"role": "system", "content": "system prompt"},
-            {"role": "user", "content": "user prompt"},
+            {"role": "user", "content": "user prompt\n"},
         ],
         temperature=settings.temperature,
         max_tokens=settings.max_tokens,
@@ -152,7 +152,7 @@ def test_run_no_message_content():
 
 
 def test_parse_response_with_thought():
-    content = "<thought>foo</thought>bar"
+    content = "<think>foo</think>bar"
     response, thought = BaseAgent._parse_response(content)
     assert response == "bar"
     assert thought == "foo"
@@ -166,7 +166,7 @@ def test_parse_response_without_thought():
 
 
 def test_parse_response_multiple_thoughts():
-    content = "<thought>first</thought>main<thought>second</thought>"
+    content = "<think>first</think>main<think>second</think>"
     response, thought = BaseAgent._parse_response(content)
     assert thought == "first"
     assert "second" in response
@@ -182,7 +182,7 @@ def test_parse_response_empty_content():
 
 def test_parse_response_only_thought():
     """Test parsing response with only thought tags."""
-    content = "<thought>just thinking</thought>"
+    content = "<think>just thinking</think>"
     response, thought = BaseAgent._parse_response(content)
     assert response == ""
     assert thought == "just thinking"
@@ -190,7 +190,7 @@ def test_parse_response_only_thought():
 
 def test_parse_response_thought_with_newlines():
     """Test parsing response with thought containing newlines."""
-    content = "<thought>multi\nline\nthought</thought>response content"
+    content = "<think>multi\nline\nthought</think>response content"
     response, thought = BaseAgent._parse_response(content)
     assert response == "response content"
     assert thought == "multi\nline\nthought"
@@ -198,7 +198,7 @@ def test_parse_response_thought_with_newlines():
 
 def test_parse_response_nested_tags():
     """Test parsing response with nested or similar tags."""
-    content = "before <thought>thinking about <other>tags</other></thought> after"
+    content = "before <think>thinking about <other>tags</other></think> after"
     response, thought = BaseAgent._parse_response(content)
     assert response == "before  after"
     assert thought == "thinking about <other>tags</other>"
