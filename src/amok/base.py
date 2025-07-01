@@ -24,6 +24,7 @@ class BaseAgent(ABC):
     max_tokens: int
     ssl_verify: bool
     stream: bool
+    is_thinking_agent: bool = True
     body_tag: str = "BODY"
 
     def __init__(self, settings: AgentSettings) -> None:
@@ -40,12 +41,13 @@ class BaseAgent(ABC):
         self.temperature = settings.temperature
         self.max_tokens = settings.max_tokens
         self.ssl_verify = settings.ssl_verify
+        self.is_thinking_agent = settings.thinking_mode
         self.stream = False
 
     @classmethod
     @abstractmethod
     def read_cfg(cls) -> Self:
-        """Read the agent's configuration."""
+        """Create an Agent based on a configuration file."""
         pass
 
     @abstractmethod
@@ -112,9 +114,24 @@ class BaseAgent(ABC):
             A tuple containing the system prompt and the user prompt.
 
         """
-        system_prompt = self.compose_system_prompt()
+        system_prompt = self.get_final_system_prompt()
         user_prompt = self.compose_user_prompt() + "\n" + self.process_body(body)
         return system_prompt, user_prompt
+
+    def get_final_system_prompt(self) -> str:
+        """Add a thinking option to the system prompt if the agent is a thinking agent.
+
+        Returns:
+            The modified system prompt with the thinking option added if applicable.
+
+        """
+        final_system_prompt = "\n".join(
+            [
+                f"{{'reasoning': {bool(self.is_thinking_agent)}}}",
+                self.compose_system_prompt(),
+            ]
+        )
+        return final_system_prompt
 
     def process_body(self, body: str | None) -> str:
         """Process the body content to ensure it prepped to be added to the user prompt.

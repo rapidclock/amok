@@ -1,4 +1,10 @@
-from amok.lib import ActionAgentSettings, AgentResponse, AgentSettings
+from amok.lib import (
+    ActionAgentSettings,
+    AgentResponse,
+    AgentSettings,
+    OptionAgentResponse,
+    OptionAgentSettings,
+)
 
 
 def test_agent_settings_required_fields():
@@ -124,3 +130,80 @@ def test_action_agent_settings_repr_and_eq():
     assert s1 == s2
     assert s1 != s3
     assert "ActionAgentSettings" in repr(s1)
+
+
+def test_option_agent_settings_defaults():
+    """Test OptionAgentSettings with default values."""
+    s = OptionAgentSettings(base_url="http://localhost", model="test-model")
+    assert s.options == []
+    assert s.commands == []  # Now properly initialized by parent's __post_init__
+    assert s.description == ""  # Inherited from ActionAgentSettings
+
+
+def test_option_agent_settings_custom_values():
+    """Test OptionAgentSettings with custom values."""
+    options = ["option1", "option2", "option3"]
+    commands = ["command1", "command2"]
+    s = OptionAgentSettings(
+        base_url="http://test",
+        model="test-model",
+        options=options,
+        commands=commands,
+        description="Test description",
+        temperature=0.2,
+    )
+    assert s.options == options
+    assert s.commands == commands
+    assert s.description == "Test description"
+    assert s.temperature == 0.2
+
+
+def test_option_agent_settings_post_init_none_options():
+    """Test OptionAgentSettings __post_init__ when options is None."""
+    s = OptionAgentSettings(base_url="http://test", model="test-model", options=None)
+    assert s.options == []
+
+
+def test_option_agent_settings_post_init_existing_options():
+    """Test OptionAgentSettings __post_init__ when options already exist."""
+    options = ["existing_option"]
+    s = OptionAgentSettings(base_url="http://test", model="test-model", options=options)
+    assert s.options == options
+
+
+def test_option_agent_settings_inheritance():
+    """Test that OptionAgentSettings inherits from ActionAgentSettings."""
+    s = OptionAgentSettings(
+        base_url="http://test", model="test-model", api_key="custom-key"
+    )
+    assert isinstance(s, ActionAgentSettings)
+    assert isinstance(s, AgentSettings)
+    assert s.api_key == "custom-key"
+
+
+def test_option_agent_response_basic():
+    """Test OptionAgentResponse basic functionality."""
+    r = OptionAgentResponse(thought="thinking", response="answer", option_index=2)
+    assert r.thought == "thinking"
+    assert r.response == "answer"
+    assert r.option_index == 2
+
+
+def test_option_agent_response_post_init_none_option_index():
+    """Test OptionAgentResponse __post_init__ when option_index is None."""
+    r = OptionAgentResponse(thought="thinking", response="answer", option_index=None)
+    assert r.option_index == -1
+
+
+def test_option_agent_response_post_init_none_response():
+    """Test OptionAgentResponse __post_init__ when response is None."""
+    r = OptionAgentResponse(thought="thinking", response=None, option_index=1)
+    assert r.option_index == -1
+
+
+def test_option_agent_response_inheritance():
+    """Test that OptionAgentResponse inherits from AgentResponse."""
+    r = OptionAgentResponse(thought="thinking", response="answer")
+    assert isinstance(r, AgentResponse)
+    assert r.thought == "thinking"
+    assert r.response == "answer"

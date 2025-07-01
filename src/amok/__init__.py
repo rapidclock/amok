@@ -2,7 +2,12 @@
 
 from amok.action import ActionAgent
 from amok.base import BaseAgent
-from amok.lib import ActionAgentSettings, AgentResponse, AgentSettings
+from amok.lib import (
+    ActionAgentSettings,
+    AgentResponse,
+    AgentSettings,
+    OptionAgentSettings,
+)
 from amok.option import OptionAgent
 
 __all__ = [
@@ -12,4 +17,5 @@ __all__ = [
     "AgentSettings",
     "OptionAgent",
     "ActionAgentSettings",
+    "OptionAgentSettings",
 ]

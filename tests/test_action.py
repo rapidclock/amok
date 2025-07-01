@@ -28,7 +28,9 @@ def test_action_agent_init():
     settings = make_action_settings()
     agent = ActionAgent(settings)
 
-    assert agent.thinking_mode is True
+    # ActionAgent doesn't have thinking_mode attribute,
+    # but inherits is_thinking_agent from BaseAgent
+    assert agent.is_thinking_agent is True
     assert agent.description == "Test description"
     assert "command1" in agent.commands
     assert "command2" in agent.commands
@@ -59,7 +61,7 @@ def test_action_agent_init_thinking_mode_false():
     settings = make_action_settings(thinking_mode=False)
     agent = ActionAgent(settings)
 
-    assert agent.thinking_mode is False
+    assert agent.is_thinking_agent is False
 
 
 def test_action_agent_init_no_description():
@@ -180,8 +182,9 @@ def test_compose_system_prompt_thinking_mode_true():
 
     prompt = agent.compose_system_prompt()
 
-    assert "{'reasoning': True}" in prompt
-    assert ACTION_SYSTEM_PROMPT in prompt
+    # compose_system_prompt only returns the base prompt,
+    # reasoning flags are added by get_final_system_prompt
+    assert prompt == ACTION_SYSTEM_PROMPT
 
 
 def test_compose_system_prompt_thinking_mode_false():
@@ -191,8 +194,9 @@ def test_compose_system_prompt_thinking_mode_false():
 
     prompt = agent.compose_system_prompt()
 
-    assert "{'reasoning': False}" in prompt
-    assert ACTION_SYSTEM_PROMPT in prompt
+    # compose_system_prompt only returns the base prompt,
+    # reasoning flags are added by get_final_system_prompt
+    assert prompt == ACTION_SYSTEM_PROMPT
 
 
 def test_run_integration():
