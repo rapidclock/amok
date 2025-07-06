@@ -64,3 +64,13 @@ def test_surround_with_tags_none_tag():
     """Test the surround_with_tags function with None tag."""
     with pytest.raises(ValueError, match="Tag cannot be None or empty"):
         surround_with_tags("content", None)
+
+
+def test_surround_with_tags_none_text():
+    """Test surround_with_tags with None text."""
+    assert surround_with_tags(None, "tag") == ""
+
+
+def test_surround_with_tags_empty_text():
+    """Test surround_with_tags with empty text."""
+    assert surround_with_tags(" ", "tag") == ""

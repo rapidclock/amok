@@ -1,5 +1,11 @@
 """Utility functions for the Amok project."""
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from amok.base import BaseAgent
+    from amok.lib import AgentResponse
+
 
 def surround_with_tags(text: str, tag: str) -> str:
     """Surround the given text with specified tags.
@@ -17,3 +23,36 @@ def surround_with_tags(text: str, tag: str) -> str:
     if tag is None or tag.strip() == "":
         raise ValueError("Tag cannot be None or empty.")
     return f"<{tag.upper()}>\n{text.strip()}\n</{tag.upper()}>"
+
+
+def chain_agents(
+    initial_body: str, *agents: "BaseAgent"
+) -> tuple[str, list["AgentResponse"]]:
+    """Chain a list of agents in order, passing the response from one agent to the next.
+
+    Args:
+        initial_body: The initial body text to send to the first agent
+        *agents: Variable number of agents to chain in order
+
+    Returns:
+        A tuple containing:
+        - final_response: The response from the last agent
+        - all_responses: List of all AgentResponse objects from each agent
+
+    Raises:
+        ValueError: If no agents are provided
+
+    """
+    if not agents:
+        raise ValueError("At least one agent must be provided")
+
+    all_responses = []
+    current_body = initial_body
+
+    for agent in agents:
+        response = agent.run(current_body)
+        all_responses.append(response)
+        current_body = response.response
+
+    final_response = all_responses[-1].response
+    return final_response, all_responses

@@ -33,7 +33,7 @@ def test_option_agent_init():
     assert agent.description == "Test description"
     assert "command1" in agent.commands
     assert "command2" in agent.commands
-    assert agent.options == ["option1", "option2", "option3"]
+    assert agent.options == ["option1", "option2", "option3", "None : None"]
     assert agent.openai_client is not None
     assert agent.model == settings.model
     assert agent.temperature == settings.temperature
@@ -44,7 +44,7 @@ def test_option_agent_init_no_options():
     settings = make_option_settings(options=None)
     agent = OptionAgent(settings)
 
-    assert agent.options == []
+    assert agent.options == ["None : None"]
 
 
 def test_option_agent_init_empty_options():
@@ -52,7 +52,7 @@ def test_option_agent_init_empty_options():
     settings = make_option_settings(options=[])
     agent = OptionAgent(settings)
 
-    assert agent.options == []
+    assert agent.options == ["None : None"]
 
 
 def test_option_agent_init_thinking_mode_false():
@@ -125,6 +125,17 @@ def test_compose_user_prompt_single_option():
     assert "<OPTIONS>" in prompt
     assert "0 : only option" in prompt
     assert "</OPTIONS>" in prompt
+
+
+def test_compose_user_prompt_empty_options_after_init():
+    """Test compose_user_prompt with options cleared after initialization."""
+    settings = make_option_settings(options=["option1"])
+    agent = OptionAgent(settings)
+    agent.options = []  # Manually clear options
+
+    prompt = agent.compose_user_prompt()
+
+    assert "<OPTIONS>\n</OPTIONS>" in prompt
 
 
 def test_compose_system_prompt():

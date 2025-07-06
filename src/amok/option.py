@@ -37,6 +37,10 @@ OPTION_SYSTEM_PROMPT = "\n".join(
         "Your response will purely be the result of applying the commands to the "
         "description and body and reply with the index to the option most "
         "appropriate in your assessment.",
+        "Please ENSURE you respond will ONLY the index of the option chosen",
+        "NO EXPLANATIONS!!!!",
+        "NO FORMATTING OF ANY KIND!",
+        "No other text, NO explanation, no description, just the index.",
     ]
 )
 
@@ -52,6 +56,8 @@ class OptionAgent(ActionAgent):
         """Initialize the option agent."""
         super().__init__(settings)
         self.options = settings.options if settings.options else []
+        # Add the Default "None" option, This is the escape hatch for the agent.
+        self.options.append("None : None")
 
     @classmethod
     def read_cfg(cls) -> Self:
