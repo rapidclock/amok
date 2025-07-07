@@ -286,7 +286,7 @@ def test_validated_settings_invalid_class():
     settings = {"base_url": "http://test.com", "model": "test-model"}
 
     with pytest.raises(
-        ValueError,
+        TypeError,
         match="Settings class dict must inherit from AgentSettings",
     ):
         InvalidAgent.validated_settings(settings)

@@ -4,7 +4,7 @@ import json
 import tomllib
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any
+from typing import Any, ClassVar
 
 import yaml
 
@@ -51,7 +51,7 @@ class TomlConfigParser(BaseConfigParser):
 class ConfigParserFactory:
     """Factory for creating configuration parsers."""
 
-    _parsers: dict[str, type[BaseConfigParser]] = {
+    _parsers: ClassVar[dict[str, type[BaseConfigParser]]] = {
         "json": JsonConfigParser,
         "yaml": YamlConfigParser,
         "yml": YamlConfigParser,
@@ -82,8 +82,8 @@ class ConfigParserFactory:
         file_extension: str,
         parser_class: type[BaseConfigParser],
     ) -> None:
-        """Register a new configuration parser."""
+        """Register a new parser for a file extension."""
         if not issubclass(parser_class, BaseConfigParser):
             msg = "Parser class must inherit from BaseConfigParser"
-            raise ValueError(msg)
+            raise TypeError(msg)
         cls._parsers[file_extension.lower()] = parser_class

@@ -13,11 +13,11 @@ from amok.option import OptionAgent
 
 __all__ = [
     "ActionAgent",
+    "ActionAgentSettings",
+    "AgentResponse",
+    "AgentSettings",
     "BaseAgent",
     "OptionAgent",
-    "AgentResponse",
     "OptionAgentResponse",
-    "AgentSettings",
-    "ActionAgentSettings",
     "OptionAgentSettings",
 ]

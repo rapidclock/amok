@@ -12,6 +12,6 @@ __all__ = [
     "BaseConfigParser",
     "ConfigParserFactory",
     "JsonConfigParser",
-    "YamlConfigParser",
     "TomlConfigParser",
+    "YamlConfigParser",
 ]

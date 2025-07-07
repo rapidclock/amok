@@ -43,9 +43,9 @@ select = [
     "D",      # pydocstyle (docstring conventions)
     "UP",     # pyupgrade (syntax updates)
     "PL",     # pylint
-    "S",      # flake8-bandit (security)
-    "B",      # flake8-bugbear (likely bugs)
     "A",      # flake8-builtins (builtin shadowing)
+    "B",      # flake8-bugbear (likely bugs)
+    "S",      # flake8-bandit (security)
     "T20",    # flake8-print (print statements)
     "PT",     # flake8-pytest-style
     "ARG",    # flake8-unused-arguments (function arguments)
@@ -62,6 +62,8 @@ select = [
     "EM",     # flake8-error-messages (error messages)
     "Q",      # flake8-quotes (string quotes)
     "PTH",    # flake8-pathlib (pathlib usage)
+    "RUF",    # ruff (general ruff rules)
+    "TRY",    # tryceratops (try-except best practices)
 ]
 ignore = [
     "D211",

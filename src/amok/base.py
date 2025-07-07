@@ -65,7 +65,7 @@ class BaseAgent(ABC):
                 f"Settings class {settings_class.__name__} must inherit "
                 f"from AgentSettings"
             )
-            raise ValueError(
+            raise TypeError(
                 msg,
             )
         # Get expected fields from the settings class

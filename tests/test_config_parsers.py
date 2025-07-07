@@ -226,7 +226,7 @@ class TestConfigParserFactory:
             pass
 
         with pytest.raises(
-            ValueError,
+            TypeError,
             match="Parser class must inherit from BaseConfigParser",
         ):
             ConfigParserFactory.register_parser("invalid", InvalidParser)

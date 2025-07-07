@@ -1,7 +1,7 @@
 """Option agent for amok."""
 
-from amok import ActionAgent, AgentSettings
-from amok.lib import OptionAgentResponse, OptionAgentSettings
+from amok.action import ActionAgent
+from amok.lib import AgentSettings, OptionAgentResponse, OptionAgentSettings
 from amok.utils import surround_with_tags
 
 OPTION_SYSTEM_PROMPT = "\n".join(
@@ -47,7 +47,7 @@ class OptionAgent(ActionAgent):
     """An agent that provides options."""
 
     description: str | None = None
-    options: list[str] = []
+    options: list[str]
     thinking_mode: bool = True
 
     def __init__(self, settings: OptionAgentSettings) -> None:
