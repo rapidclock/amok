@@ -232,7 +232,7 @@ class TestConfigParserFactory:
             ConfigParserFactory.register_parser("invalid", InvalidParser)
 
     def test_register_parser_case_insensitive(self):
-        """Test registering parser with case insensitive extension."""
+        """Test registering parser with case-insensitive extension."""
 
         class CaseParser(BaseConfigParser):
             def parse(self, config_str: str) -> dict:
