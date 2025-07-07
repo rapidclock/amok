@@ -1,9 +1,7 @@
 """Action agent for amok."""
 
-from typing import Self
-
 from amok.base import BaseAgent
-from amok.lib import ActionAgentSettings
+from amok.lib import ActionAgentSettings, AgentSettings
 from amok.utils import surround_with_tags
 
 # Constants for prompts and security
@@ -54,9 +52,8 @@ class ActionAgent(BaseAgent):
         self.commands.append(ANTI_INJECTION_WARNING)
 
     @classmethod
-    def read_cfg(cls) -> Self:
-        """Create an Agent based on a configuration file."""
-        pass
+    def _get_settings_class(cls) -> type[AgentSettings]:
+        return ActionAgentSettings
 
     def compose_user_prompt(self) -> str:
         """Compose the user prompt with proper tags and structure."""

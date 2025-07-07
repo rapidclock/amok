@@ -2,7 +2,7 @@
 
 import re
 from abc import ABC, abstractmethod
-from typing import Self
+from typing import Any, Self
 
 from openai import OpenAI
 from openai.types.chat import (
@@ -11,6 +11,7 @@ from openai.types.chat import (
     ChatCompletionUserMessageParam,
 )
 
+from amok.config import BaseConfigParser, ConfigParserFactory
 from amok.lib import AgentResponse, AgentSettings
 from amok.utils import surround_with_tags
 
@@ -45,9 +46,39 @@ class BaseAgent(ABC):
         self.stream = False
 
     @classmethod
-    @abstractmethod
-    def read_cfg(cls) -> Self:
+    def read_cfg(cls, cfg_file_path: str) -> Self:
         """Create an Agent based on a configuration file."""
+        setting_class: type[AgentSettings] = cls._get_settings_class()
+        cfg_parser: BaseConfigParser = ConfigParserFactory.get_parser(cfg_file_path)
+        cfg: dict[str, Any] = cfg_parser.load(cfg_file_path)
+        validated_cfg: dict[str, Any] = cls.validated_settings(cfg)
+        settings = setting_class(**validated_cfg)
+        return cls(settings)
+
+    @classmethod
+    def validated_settings(cls, settings: dict[str, Any]) -> dict[str, Any]:
+        """Validate and return the settings for the agent."""
+        settings_class = cls._get_settings_class()
+        if not issubclass(settings_class, AgentSettings):
+            raise ValueError(
+                f"Settings class {settings_class.__name__} must inherit "
+                f"from AgentSettings"
+            )
+        # Get expected fields from the settings class
+        expected_fields = set(settings_class.__annotations__.keys())
+
+        # Filter and validate config
+        validated_config = {}
+        for key, value in settings.items():
+            if key in expected_fields:
+                validated_config[key] = value
+
+        return validated_config
+
+    @classmethod
+    @abstractmethod
+    def _get_settings_class(cls) -> type[AgentSettings]:
+        """Get the settings class for the agent."""
         pass
 
     @abstractmethod

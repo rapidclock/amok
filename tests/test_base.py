@@ -7,8 +7,8 @@ from amok.lib import AgentResponse, AgentSettings
 
 
 class DummyAgent(BaseAgent):
-    def read_cfg(self) -> None:
-        pass
+    def _get_settings_class(self) -> type[AgentSettings]:
+        return AgentSettings
 
     def compose_user_prompt(self) -> str:
         return "user prompt"

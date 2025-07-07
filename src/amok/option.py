@@ -1,8 +1,6 @@
 """Option agent for amok."""
 
-from typing import Self
-
-from amok import ActionAgent
+from amok import ActionAgent, AgentSettings
 from amok.lib import OptionAgentResponse, OptionAgentSettings
 from amok.utils import surround_with_tags
 
@@ -60,9 +58,8 @@ class OptionAgent(ActionAgent):
         self.options.append("None : None")
 
     @classmethod
-    def read_cfg(cls) -> Self:
-        """Create an Agent based on a configuration file."""
-        pass
+    def _get_settings_class(cls) -> type[AgentSettings]:
+        return OptionAgentSettings
 
     def compose_user_prompt(self) -> str:
         """Compose the user prompt."""

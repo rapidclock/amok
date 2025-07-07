@@ -8,17 +8,16 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "openai",
-    "toml",
-    "jsonschema"
+    "openai==1.93.0",
+    "PyYAML==6.0.2",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "black",
-    "ruff",
-    "pytest",
-    "pytest-cov",
+    "black==25.1.0",
+    "ruff===0.12.2",
+    "pytest==8.4.1",
+    "pytest-cov==6.2.1",
 ]
 
 [build-system]

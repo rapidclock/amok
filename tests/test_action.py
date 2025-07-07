@@ -80,15 +80,6 @@ def test_action_agent_init_empty_description():
     assert agent.description == ""
 
 
-def test_read_cfg():
-    """Test read_cfg method."""
-    settings = make_action_settings()
-    agent = ActionAgent(settings)
-
-    # Should not raise any exception
-    agent.read_cfg()
-
-
 def test_compose_user_prompt_with_description_and_commands():
     """Test compose_user_prompt with description and commands."""
     settings = make_action_settings(

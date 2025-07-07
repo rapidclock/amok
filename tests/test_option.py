@@ -63,15 +63,6 @@ def test_option_agent_init_thinking_mode_false():
     assert agent.is_thinking_agent is False
 
 
-def test_read_cfg():
-    """Test read_cfg method."""
-    settings = make_option_settings()
-    agent = OptionAgent(settings)
-
-    # Should not raise any exception
-    agent.read_cfg()
-
-
 def test_compose_user_prompt_with_options():
     """Test compose_user_prompt with options."""
     settings = make_option_settings(
