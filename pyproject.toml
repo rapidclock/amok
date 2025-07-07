@@ -18,7 +18,10 @@ classifiers = [
 license-files = [
     "LICENSE.txt",
 ]
-home-page = "https://github.com/rapidclock/amok"
+
+[project.urls]
+Homepage = "https://github.com/rapidclock/amok"
+Repository = "https://github.com/rapidclock/amok"
 
 [project.optional-dependencies]
 dev = [
