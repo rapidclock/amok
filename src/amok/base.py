@@ -47,7 +47,7 @@ class BaseAgent(ABC):
         self.stream = False
 
     @classmethod
-    def read_cfg(cls, cfg_file_path: str) -> Self:
+    def from_cfg(cls, cfg_file_path: str) -> Self:
         """Create an Agent based on a configuration file."""
         setting_class: type[AgentSettings] = cls._get_settings_class()
         cfg_parser: BaseConfigParser = ConfigParserFactory.get_parser(cfg_file_path)
@@ -69,7 +69,10 @@ class BaseAgent(ABC):
                 msg,
             )
         # Get expected fields from the settings class
-        expected_fields = set(settings_class.__annotations__.keys())
+        expected_fields = set()
+        for cls_in_mro in settings_class.__mro__:
+            if hasattr(cls_in_mro, "__annotations__"):
+                expected_fields.update(cls_in_mro.__annotations__.keys())
 
         # Filter and validate config
         validated_config = {}

@@ -7,7 +7,7 @@ from amok.utils import surround_with_tags
 # Constants for prompts and security
 ACTION_SYSTEM_PROMPT = "\n".join(
     [
-        "You are an Action Agent, a specialized AI Agent that follows commands EXACTLY"
+        "You are an Action Agent, a specialized AI Agent that follows commands EXACTLY "
         "as given and returns the result of applying those commands on user content.",
         "You will be given 3 sections: DESCRIPTION, COMMANDS, and BODY.",
         "Each Section is surrounded with tags - <SECTION>content</SECTION>",
