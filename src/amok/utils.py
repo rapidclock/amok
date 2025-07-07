@@ -26,7 +26,8 @@ def surround_with_tags(text: str, tag: str) -> str:
 
 
 def chain_agents(
-    initial_body: str, *agents: "BaseAgent"
+    initial_body: str,
+    *agents: "BaseAgent",
 ) -> tuple[str, list["AgentResponse"]]:
     """Chain a list of agents in order, passing the response from one agent to the next.
 

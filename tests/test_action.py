@@ -89,7 +89,8 @@ def test_action_agent_init_empty_description():
 def test_compose_user_prompt_with_description_and_commands():
     """Test compose_user_prompt with description and commands."""
     settings = make_action_settings(
-        description="Test description", commands=["command1", "command2"]
+        description="Test description",
+        commands=["command1", "command2"],
     )
     agent = ActionAgent(settings)
 
@@ -207,7 +208,7 @@ def test_run_integration():
     mock_choice.message.content = "<think>thinking</think>response"
     mock_completion.choices = [mock_choice]
     agent.openai_client.chat.completions.create = MagicMock(
-        return_value=mock_completion
+        return_value=mock_completion,
     )
 
     response = agent.run(body="test body")
@@ -245,7 +246,7 @@ def test_run_integration_no_body():
     mock_choice.message.content = "response without thought"
     mock_completion.choices = [mock_choice]
     agent.openai_client.chat.completions.create = MagicMock(
-        return_value=mock_completion
+        return_value=mock_completion,
     )
 
     response = agent.run(body=None)

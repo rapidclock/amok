@@ -39,7 +39,7 @@ OPTION_SYSTEM_PROMPT = "\n".join(
         "NO EXPLANATIONS!!!!",
         "NO FORMATTING OF ANY KIND!",
         "No other text, NO explanation, no description, just the index.",
-    ]
+    ],
 )
 
 

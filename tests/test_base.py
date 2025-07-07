@@ -66,7 +66,7 @@ def test_run_success(monkeypatch):
     mock_choice.message.content = "<think>think</think>response"
     mock_completion.choices = [mock_choice]
     agent.openai_client.chat.completions.create = MagicMock(
-        return_value=mock_completion
+        return_value=mock_completion,
     )
     resp = agent.run(body="test body")
     assert isinstance(resp, AgentResponse)
@@ -93,7 +93,7 @@ def test_run_success_no_body(monkeypatch):
     mock_choice.message.content = "<think>think</think>response"
     mock_completion.choices = [mock_choice]
     agent.openai_client.chat.completions.create = MagicMock(
-        return_value=mock_completion
+        return_value=mock_completion,
     )
     resp = agent.run(body=None)
     assert isinstance(resp, AgentResponse)
@@ -125,7 +125,7 @@ def test_run_no_response(monkeypatch):
     mock_completion = MagicMock()
     mock_completion.choices = []
     agent.openai_client.chat.completions.create = MagicMock(
-        return_value=mock_completion
+        return_value=mock_completion,
     )
     with pytest.raises(ValueError, match="No response from the model"):
         agent.run(body="test body")
@@ -149,7 +149,7 @@ def test_run_no_message():
     mock_choice.message = None
     mock_completion.choices = [mock_choice]
     agent.openai_client.chat.completions.create = MagicMock(
-        return_value=mock_completion
+        return_value=mock_completion,
     )
     with pytest.raises(ValueError, match="No response from the model"):
         agent.run(body="test body")
@@ -164,7 +164,7 @@ def test_run_no_message_content():
     mock_choice.message.content = None
     mock_completion.choices = [mock_choice]
     agent.openai_client.chat.completions.create = MagicMock(
-        return_value=mock_completion
+        return_value=mock_completion,
     )
     with pytest.raises(ValueError, match="No response from the model"):
         agent.run(body="test body")
@@ -286,7 +286,8 @@ def test_validated_settings_invalid_class():
     settings = {"base_url": "http://test.com", "model": "test-model"}
 
     with pytest.raises(
-        ValueError, match="Settings class dict must inherit from AgentSettings"
+        ValueError,
+        match="Settings class dict must inherit from AgentSettings",
     ):
         InvalidAgent.validated_settings(settings)
 

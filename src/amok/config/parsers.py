@@ -17,7 +17,7 @@ class BaseConfigParser(ABC):
         """Parse the config contents into a dictionary."""
         pass
 
-    def load(self, path: str, encoding="utf-8") -> dict[str, Any]:
+    def load(self, path: str, encoding: str = "utf-8") -> dict[str, Any]:
         """Load configuration from a file."""
         with open(path, encoding=encoding) as file:
             config_str = file.read()
@@ -77,7 +77,9 @@ class ConfigParserFactory:
 
     @classmethod
     def register_parser(
-        cls, file_extension: str, parser_class: type[BaseConfigParser]
+        cls,
+        file_extension: str,
+        parser_class: type[BaseConfigParser],
     ) -> None:
         """Register a new configuration parser."""
         if not issubclass(parser_class, BaseConfigParser):

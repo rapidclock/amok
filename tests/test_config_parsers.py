@@ -117,7 +117,7 @@ class TestTomlConfigParser:
         invalid syntax here
         """
         with pytest.raises(
-            tomllib.TOMLDecodeError
+            tomllib.TOMLDecodeError,
         ):  # tomllib raises TOMLDecodeError for invalid TOML
             parser.parse(config_str)
 
@@ -226,7 +226,8 @@ class TestConfigParserFactory:
             pass
 
         with pytest.raises(
-            ValueError, match="Parser class must inherit from BaseConfigParser"
+            ValueError,
+            match="Parser class must inherit from BaseConfigParser",
         ):
             ConfigParserFactory.register_parser("invalid", InvalidParser)
 

@@ -36,7 +36,8 @@ class BaseAgent(ABC):
 
         """
         self.openai_client = OpenAI(
-            base_url=settings.base_url, api_key=settings.api_key
+            base_url=settings.base_url,
+            api_key=settings.api_key,
         )
         self.model = settings.model
         self.temperature = settings.temperature
@@ -62,7 +63,7 @@ class BaseAgent(ABC):
         if not issubclass(settings_class, AgentSettings):
             raise ValueError(
                 f"Settings class {settings_class.__name__} must inherit "
-                f"from AgentSettings"
+                f"from AgentSettings",
             )
         # Get expected fields from the settings class
         expected_fields = set(settings_class.__annotations__.keys())
@@ -160,7 +161,7 @@ class BaseAgent(ABC):
             [
                 f"{{'reasoning': {bool(self.is_thinking_agent)}}}",
                 self.compose_system_prompt(),
-            ]
+            ],
         )
         return final_system_prompt
 
@@ -199,7 +200,11 @@ class BaseAgent(ABC):
             # The response is the original content with the thought block removed.
             # count=1 ensures we only replace the first occurrence.
             response = re.sub(
-                thought_pattern, "", content, count=1, flags=re.DOTALL
+                thought_pattern,
+                "",
+                content,
+                count=1,
+                flags=re.DOTALL,
             ).strip()
         else:
             # If no thought tag is found, the entire content is the response.

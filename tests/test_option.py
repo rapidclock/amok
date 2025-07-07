@@ -156,7 +156,7 @@ def test_run_integration():
     mock_choice.message.content = "<think>thinking</think>1"
     mock_completion.choices = [mock_choice]
     agent.openai_client.chat.completions.create = MagicMock(
-        return_value=mock_completion
+        return_value=mock_completion,
     )
 
     response = agent.run(body="test body")
@@ -196,7 +196,7 @@ def test_run_integration_no_body():
     mock_choice.message.content = "0"
     mock_completion.choices = [mock_choice]
     agent.openai_client.chat.completions.create = MagicMock(
-        return_value=mock_completion
+        return_value=mock_completion,
     )
 
     response = agent.run(body=None)
@@ -250,7 +250,9 @@ def test_process_output_option_invalid_response():
 
     # Test with non-numeric response
     result = OptionAgentResponse(
-        thought=None, response="not_a_number", option_index=None
+        thought=None,
+        response="not_a_number",
+        option_index=None,
     )
     processed = agent.process_output_option(result)
 

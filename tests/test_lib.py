@@ -100,7 +100,9 @@ def test_action_agent_settings_post_init_existing_commands():
     """Test ActionAgentSettings __post_init__ when commands already exist."""
     commands = ["existing_command"]
     s = ActionAgentSettings(
-        base_url="http://test", model="test-model", commands=commands
+        base_url="http://test",
+        model="test-model",
+        commands=commands,
     )
     assert s.commands == commands
 
@@ -108,7 +110,9 @@ def test_action_agent_settings_post_init_existing_commands():
 def test_action_agent_settings_inheritance():
     """Test that ActionAgentSettings inherits from AgentSettings."""
     s = ActionAgentSettings(
-        base_url="http://test", model="test-model", api_key="custom-key"
+        base_url="http://test",
+        model="test-model",
+        api_key="custom-key",
     )
     assert isinstance(s, AgentSettings)
     assert s.api_key == "custom-key"
@@ -119,13 +123,19 @@ def test_action_agent_settings_inheritance():
 def test_action_agent_settings_repr_and_eq():
     """Test ActionAgentSettings repr and equality."""
     s1 = ActionAgentSettings(
-        base_url="http://test", model="test-model", description="desc"
+        base_url="http://test",
+        model="test-model",
+        description="desc",
     )
     s2 = ActionAgentSettings(
-        base_url="http://test", model="test-model", description="desc"
+        base_url="http://test",
+        model="test-model",
+        description="desc",
     )
     s3 = ActionAgentSettings(
-        base_url="http://test", model="test-model", description="different"
+        base_url="http://test",
+        model="test-model",
+        description="different",
     )
     assert s1 == s2
     assert s1 != s3
@@ -174,7 +184,9 @@ def test_option_agent_settings_post_init_existing_options():
 def test_option_agent_settings_inheritance():
     """Test that OptionAgentSettings inherits from ActionAgentSettings."""
     s = OptionAgentSettings(
-        base_url="http://test", model="test-model", api_key="custom-key"
+        base_url="http://test",
+        model="test-model",
+        api_key="custom-key",
     )
     assert isinstance(s, ActionAgentSettings)
     assert isinstance(s, AgentSettings)

@@ -49,7 +49,11 @@ select = [
     "PT",   # flake8-pytest-style
     "SIM",  # flake8-simplify
     "PT",   # flake8-pytest-style
-#    "FLY",  # flake8-flynt (string formatting)
+    "ARG",  # flake8-unused-arguments (function arguments)
+    "TC",   # flake8-type-checking (type hints)
+    "SIM",  # flake8-simplify (simplifications)
+    "COM",  # flake8-commas
+    "ANN",  # flake8-annotations (type annotations)
     "PL"    # pylint
 ]
 ignore = [
@@ -62,7 +66,9 @@ ignore = [
 "tests/*" = [
     "S101", # Avoid using `assert` statements in tests.
     "D", # Ignore docstring conventions.
-    "PLR2004" # Ignore Magic Numbers Warnings.
+    "PLR2004", # Ignore Magic Numbers Warnings.
+    "ARG", # Ignore unused arguments in tests.
+    "ANN", # Ignore type annotations in tests.
 ]
 "src/bin/*" = [
     "ALL" # Ignore all rules for bin scripts. These are just for quick testing.
