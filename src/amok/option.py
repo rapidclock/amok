@@ -47,7 +47,7 @@ class OptionAgent(ActionAgent):
     """An agent that provides options."""
 
     description: str | None = None
-    options: list[str] = list([])
+    options: list[str] = []
     thinking_mode: bool = True
 
     def __init__(self, settings: OptionAgentSettings) -> None:

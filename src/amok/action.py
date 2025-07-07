@@ -42,7 +42,7 @@ class ActionAgent(BaseAgent):
     """An agent that performs actions based on user input."""
 
     description: str | None = None
-    commands: list[str] = list([])
+    commands: list[str] = []
 
     def __init__(self, settings: ActionAgentSettings) -> None:
         """Initialize the action agent."""

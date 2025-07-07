@@ -34,27 +34,34 @@ extend-include = ["src/**/*.py", "tests/**/*.py"]
 
 [tool.ruff.lint]
 select = [
-    "E",    # pycodestyle errors
-    "F",    # pyflakes
-    "W",    # pycodestyle warnings
-    "C90",  # mccabe complexity
-    "I",    # isort (import sorting)
-    "N",    # pep8-naming
-    "D",    # pydocstyle (docstring conventions)
-    "UP",   # pyupgrade (syntax updates)
-    "S",    # flake8-bandit (security)
-    "B",    # flake8-bugbear (likely bugs)
-    "A",    # flake8-builtins (builtin shadowing)
-    "T20",  # flake8-print (print statements)
-    "PT",   # flake8-pytest-style
-    "SIM",  # flake8-simplify
-    "PT",   # flake8-pytest-style
-    "ARG",  # flake8-unused-arguments (function arguments)
-    "TC",   # flake8-type-checking (type hints)
-    "SIM",  # flake8-simplify (simplifications)
-    "COM",  # flake8-commas
-    "ANN",  # flake8-annotations (type annotations)
-    "PL"    # pylint
+    "E",     # pycodestyle errors
+    "F",     # pyflakes
+    "W",     # pycodestyle warnings
+    "C90",   # mccabe complexity
+    "I",     # isort (import sorting)
+    "N",     # pep8-naming
+    "D",     # pydocstyle (docstring conventions)
+    "UP",    # pyupgrade (syntax updates)
+    "PL",    # pylint
+    "S",     # flake8-bandit (security)
+    "B",     # flake8-bugbear (likely bugs)
+    "A",     # flake8-builtins (builtin shadowing)
+    "T20",   # flake8-print (print statements)
+    "PT",    # flake8-pytest-style
+    "SIM",   # flake8-simplify
+    "PT",    # flake8-pytest-style
+    "ARG",   # flake8-unused-arguments (function arguments)
+    "TC",    # flake8-type-checking (type hints)
+    "SIM",   # flake8-simplify (simplifications)
+    "COM",   # flake8-commas
+    "ANN",   # flake8-annotations (type annotations)
+    "ERA",   # flake8-eradicate (dead code)
+    "FBT",   # flake8-boolean-trap
+    "C4",    # flake8-comprehensions (comprehension optimizations)
+    "ASYNC", # flake8-asyncio (asyncio best practices)
+    "FIX",   # flake8-fixme (check fixme comments)
+#    "EM",    # flake8-error-messages (error messages)
+
 ]
 ignore = [
     "D211",
