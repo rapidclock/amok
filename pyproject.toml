@@ -48,6 +48,8 @@ select = [
     "T20",  # flake8-print (print statements)
     "PT",   # flake8-pytest-style
     "SIM",  # flake8-simplify
+    "PT",   # flake8-pytest-style
+#    "FLY",  # flake8-flynt (string formatting)
     "PL"    # pylint
 ]
 ignore = [

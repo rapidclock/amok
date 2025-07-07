@@ -39,6 +39,12 @@ def test_option_agent_init():
     assert agent.temperature == settings.temperature
 
 
+def test_option_agent_get_settings_class():
+    """Test OptionAgent _get_settings_class method."""
+    settings_class = OptionAgent._get_settings_class()
+    assert settings_class == OptionAgentSettings
+
+
 def test_option_agent_init_no_options():
     """Test OptionAgent initialization with no options."""
     settings = make_option_settings(options=None)

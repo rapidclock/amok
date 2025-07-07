@@ -40,6 +40,12 @@ def test_action_agent_init():
     assert agent.temperature == settings.temperature
 
 
+def test_action_agent_get_settings_class():
+    """Test ActionAgent _get_settings_class method."""
+    settings_class = ActionAgent._get_settings_class()
+    assert settings_class == ActionAgentSettings
+
+
 def test_action_agent_init_no_commands():
     """Test ActionAgent initialization with no commands."""
     settings = make_action_settings(commands=None)

@@ -68,6 +68,9 @@ class ConfigParserFactory:
     def get_parser_for_extension(cls, file_extension: str) -> BaseConfigParser:
         """Get a configuration parser for a specific file extension."""
         file_extension = file_extension.lower()
+        # Remove leading dot if present
+        if file_extension.startswith("."):
+            file_extension = file_extension[1:]
         if file_extension not in cls._parsers:
             raise ValueError(f"Unsupported config file type: {file_extension}")
         return cls._parsers[file_extension]()

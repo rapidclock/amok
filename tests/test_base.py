@@ -1,3 +1,7 @@
+import json
+
+# Add import for config testing
+import tempfile
 from unittest.mock import MagicMock
 
 import pytest
@@ -7,8 +11,23 @@ from amok.lib import AgentResponse, AgentSettings
 
 
 class DummyAgent(BaseAgent):
-    def _get_settings_class(self) -> type[AgentSettings]:
+    @classmethod
+    def _get_settings_class(cls) -> type[AgentSettings]:
         return AgentSettings
+
+    def compose_user_prompt(self) -> str:
+        return "user prompt"
+
+    def compose_system_prompt(self) -> str:
+        return "system prompt"
+
+
+class InvalidAgent(BaseAgent):
+    """Agent with invalid settings class for testing."""
+
+    @classmethod
+    def _get_settings_class(cls) -> type:
+        return dict  # Invalid - not a subclass of AgentSettings
 
     def compose_user_prompt(self) -> str:
         return "user prompt"
@@ -202,3 +221,93 @@ def test_parse_response_nested_tags():
     response, thought = BaseAgent._parse_response(content)
     assert response == "before  after"
     assert thought == "thinking about <other>tags</other>"
+
+
+def test_read_cfg_success():
+    """Test successful configuration reading from file."""
+    config_data = {
+        "base_url": "http://test.com",
+        "model": "test-model",
+        "api_key": "test-key",
+        "temperature": 0.8,
+        "max_tokens": 2000,
+        "ssl_verify": False,
+        "thinking_mode": False,
+        "extra_field": "should_be_ignored",  # This should be filtered out
+    }
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        json.dump(config_data, f)
+        f.flush()
+
+        agent = DummyAgent.read_cfg(f.name)
+
+        assert agent.model == "test-model"
+        assert agent.temperature == 0.8
+        assert agent.max_tokens == 2000
+        assert agent.ssl_verify is False
+        assert agent.is_thinking_agent is False
+        assert agent.openai_client is not None
+
+
+def test_validated_settings_success():
+    """Test successful settings validation."""
+    settings = {
+        "base_url": "http://test.com",
+        "model": "test-model",
+        "api_key": "test-key",
+        "temperature": 0.5,
+        "max_tokens": 1500,
+        "ssl_verify": True,
+        "thinking_mode": True,
+        "extra_field": "should_be_ignored",
+    }
+
+    validated = DummyAgent.validated_settings(settings)
+
+    # Should only include fields that are in AgentSettings
+    expected_fields = {
+        "base_url",
+        "model",
+        "api_key",
+        "temperature",
+        "max_tokens",
+        "ssl_verify",
+        "thinking_mode",
+    }
+    assert set(validated.keys()) == expected_fields
+    assert validated["base_url"] == "http://test.com"
+    assert validated["model"] == "test-model"
+    assert "extra_field" not in validated
+
+
+def test_validated_settings_invalid_class():
+    """Test validation with invalid settings class."""
+    settings = {"base_url": "http://test.com", "model": "test-model"}
+
+    with pytest.raises(
+        ValueError, match="Settings class dict must inherit from AgentSettings"
+    ):
+        InvalidAgent.validated_settings(settings)
+
+
+def test_validated_settings_partial_fields():
+    """Test validation with only some fields present."""
+    settings = {
+        "base_url": "http://test.com",
+        "model": "test-model",
+        "unknown_field": "value",
+    }
+
+    validated = DummyAgent.validated_settings(settings)
+
+    assert validated == {"base_url": "http://test.com", "model": "test-model"}
+
+
+def test_validated_settings_empty():
+    """Test validation with empty settings."""
+    settings = {}
+
+    validated = DummyAgent.validated_settings(settings)
+
+    assert validated == {}
