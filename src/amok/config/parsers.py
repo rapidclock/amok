@@ -19,7 +19,7 @@ class BaseConfigParser(ABC):
 
     def load(self, path: str, encoding: str = "utf-8") -> dict[str, Any]:
         """Load configuration from a file."""
-        with open(path, encoding=encoding) as file:
+        with Path(path).open(encoding=encoding) as file:
             config_str = file.read()
         return self.parse(config_str)
 
