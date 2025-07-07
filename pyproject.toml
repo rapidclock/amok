@@ -11,6 +11,13 @@ dependencies = [
     "openai==1.93.0",
     "PyYAML==6.0.2",
 ]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license-files = [
+    "LICENSE.txt",
+]
 
 [project.optional-dependencies]
 dev = [
