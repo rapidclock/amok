@@ -21,7 +21,8 @@ def surround_with_tags(text: str, tag: str) -> str:
     if text is None or text.strip() == "":
         return ""
     if tag is None or tag.strip() == "":
-        raise ValueError("Tag cannot be None or empty.")
+        msg = "Tag cannot be None or empty."
+        raise ValueError(msg)
     return f"<{tag.upper()}>\n{text.strip()}\n</{tag.upper()}>"
 
 
@@ -45,7 +46,8 @@ def chain_agents(
 
     """
     if not agents:
-        raise ValueError("At least one agent must be provided")
+        msg = "At least one agent must be provided"
+        raise ValueError(msg)
 
     all_responses = []
     current_body = initial_body

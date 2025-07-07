@@ -60,7 +60,7 @@ select = [
     "C4",    # flake8-comprehensions (comprehension optimizations)
     "ASYNC", # flake8-asyncio (asyncio best practices)
     "FIX",   # flake8-fixme (check fixme comments)
-#    "EM",    # flake8-error-messages (error messages)
+    "EM",    # flake8-error-messages (error messages)
 
 ]
 ignore = [

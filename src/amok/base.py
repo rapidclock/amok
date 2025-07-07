@@ -61,9 +61,12 @@ class BaseAgent(ABC):
         """Validate and return the settings for the agent."""
         settings_class = cls._get_settings_class()
         if not issubclass(settings_class, AgentSettings):
-            raise ValueError(
+            msg = (
                 f"Settings class {settings_class.__name__} must inherit "
-                f"from AgentSettings",
+                f"from AgentSettings"
+            )
+            raise ValueError(
+                msg,
             )
         # Get expected fields from the settings class
         expected_fields = set(settings_class.__annotations__.keys())
@@ -111,7 +114,8 @@ class BaseAgent(ABC):
         """
         system_prompt, user_prompt = self.generate_prompts(body)
         if not self.openai_client:
-            raise ValueError("OpenAI client not initialized.")
+            msg = "OpenAI client not initialized."
+            raise ValueError(msg)
         completion: ChatCompletion = self.openai_client.chat.completions.create(
             model=self.model,
             messages=[
@@ -128,7 +132,8 @@ class BaseAgent(ABC):
             or not completion.choices[0].message
             or not completion.choices[0].message.content
         ):
-            raise ValueError("No response from the model.")
+            msg = "No response from the model."
+            raise ValueError(msg)
         content: str = completion.choices[0].message.content
         response, thought = self._parse_response(content)
         return AgentResponse(thought=thought, response=response)

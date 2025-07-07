@@ -72,7 +72,8 @@ class ConfigParserFactory:
         if file_extension.startswith("."):
             file_extension = file_extension[1:]
         if file_extension not in cls._parsers:
-            raise ValueError(f"Unsupported config file type: {file_extension}")
+            msg = f"Unsupported config file type: {file_extension}"
+            raise ValueError(msg)
         return cls._parsers[file_extension]()
 
     @classmethod
@@ -83,5 +84,6 @@ class ConfigParserFactory:
     ) -> None:
         """Register a new configuration parser."""
         if not issubclass(parser_class, BaseConfigParser):
-            raise ValueError("Parser class must inherit from BaseConfigParser")
+            msg = "Parser class must inherit from BaseConfigParser"
+            raise ValueError(msg)
         cls._parsers[file_extension.lower()] = parser_class
