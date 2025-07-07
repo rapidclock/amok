@@ -35,7 +35,7 @@ OPTION_SYSTEM_PROMPT = "\n".join(
         "Your response will purely be the result of applying the commands to the "
         "description and body and reply with the index to the option most "
         "appropriate in your assessment.",
-        "Please ENSURE you respond will ONLY the index of the option chosen",
+        "Please ENSURE you respond with ONLY the index of the option chosen",
         "NO EXPLANATIONS!!!!",
         "NO FORMATTING OF ANY KIND!",
         "No other text, NO explanation, no description, just the index.",
