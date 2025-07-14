@@ -1,6 +1,6 @@
 """Library of dataclasses for amok."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -29,6 +29,8 @@ class OptionAgentSettings(ActionAgentSettings):
     """Settings for an Option Agent."""
 
     options: list[str] = field(default_factory=list)
+
+
 @dataclass
 class AgentResponse:
     """Response from an agent."""
