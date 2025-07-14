@@ -240,7 +240,7 @@ def test_read_cfg_success():
         json.dump(config_data, f)
         f.flush()
 
-        agent = DummyAgent.read_cfg(f.name)
+        agent = DummyAgent.from_cfg(f.name)
 
         assert agent.model == "test-model"
         assert agent.temperature == 0.8

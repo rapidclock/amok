@@ -1,8 +1,8 @@
 """Action agent for amok."""
 
-from amok.base import BaseAgent
-from amok.lib import ActionAgentSettings, AgentSettings
-from amok.utils import surround_with_tags
+from .base import BaseAgent
+from .lib import ActionAgentSettings, AgentSettings
+from .utils import surround_with_tags
 
 # Constants for prompts and security
 ACTION_SYSTEM_PROMPT = "\n".join(

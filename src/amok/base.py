@@ -11,9 +11,9 @@ from openai.types.chat import (
     ChatCompletionUserMessageParam,
 )
 
-from amok.config import BaseConfigParser, ConfigParserFactory
-from amok.lib import AgentResponse, AgentSettings
-from amok.utils import surround_with_tags
+from .config import BaseConfigParser, ConfigParserFactory
+from .lib import AgentResponse, AgentSettings
+from .utils import surround_with_tags
 
 
 class BaseAgent(ABC):

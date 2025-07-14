@@ -1,8 +1,8 @@
 """Option agent for amok."""
 
-from amok.action import ActionAgent
-from amok.lib import AgentSettings, OptionAgentResponse, OptionAgentSettings
-from amok.utils import surround_with_tags
+from .action import ActionAgent
+from .lib import AgentSettings, OptionAgentResponse, OptionAgentSettings
+from .utils import surround_with_tags
 
 OPTION_SYSTEM_PROMPT = "\n".join(
     [

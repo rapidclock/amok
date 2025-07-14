@@ -3,8 +3,8 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from amok.base import BaseAgent
-    from amok.lib import AgentResponse
+    from .base import BaseAgent
+    from .lib import AgentResponse
 
 
 def surround_with_tags(text: str, tag: str) -> str:

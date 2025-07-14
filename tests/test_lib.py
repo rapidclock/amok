@@ -90,9 +90,9 @@ def test_action_agent_settings_custom_values():
     assert s.max_tokens == 500
 
 
-def test_action_agent_settings_post_init_none_commands():
+def test_action_agent_settings_post_init_no_commands():
     """Test ActionAgentSettings __post_init__ when commands is None."""
-    s = ActionAgentSettings(base_url="http://test", model="test-model", commands=None)
+    s = ActionAgentSettings(base_url="http://test", model="test-model")
     assert s.commands == []
 
 
@@ -168,9 +168,9 @@ def test_option_agent_settings_custom_values():
     assert s.temperature == 0.2
 
 
-def test_option_agent_settings_post_init_none_options():
+def test_option_agent_settings_post_init_no_options():
     """Test OptionAgentSettings __post_init__ when options is None."""
-    s = OptionAgentSettings(base_url="http://test", model="test-model", options=None)
+    s = OptionAgentSettings(base_url="http://test", model="test-model")
     assert s.options == []
 
 
