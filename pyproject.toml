@@ -1,0 +1,120 @@
+[project]
+name = "amok"
+version = "0.1.0"
+description = "Create OpenAI API Compatible, Task driven agents."
+authors = [
+    { name = "rapidclock", email = "rapidclock@users.noreply.github.com" }
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "openai==1.93.0",
+    "PyYAML==6.0.2",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license-files = [
+    "LICENSE.txt",
+]
+
+[project.urls]
+Homepage = "https://github.com/rapidclock/amok"
+Repository = "https://github.com/rapidclock/amok"
+
+[project.optional-dependencies]
+dev = [
+    "black==25.1.0",
+    "ruff===0.12.2",
+    "pytest==8.4.1",
+    "pytest-cov==6.2.1",
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 88
+target-version = ['py312']
+
+[tool.ruff]
+# Only lint these directories
+extend-include = ["src/**/*.py", "tests/**/*.py"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W", # pycodestyle errors
+    "F",      # pyflakes
+    "W",      # pycodestyle warnings
+    "C90",    # mccabe complexity
+    "I",      # isort (import sorting)
+    "N",      # pep8-naming
+    "D",      # pydocstyle (docstring conventions)
+    "UP",     # pyupgrade (syntax updates)
+    "PL",     # pylint
+    "A",      # flake8-builtins (builtin shadowing)
+    "B",      # flake8-bugbear (likely bugs)
+    "S",      # flake8-bandit (security)
+    "T20",    # flake8-print (print statements)
+    "PT",     # flake8-pytest-style
+    "ARG",    # flake8-unused-arguments (function arguments)
+    "TC",     # flake8-type-checking (type hints)
+    "SIM",    # flake8-simplify (simplifications)
+    "COM",    # flake8-commas
+    "ANN",    # flake8-annotations (type annotations)
+    "ERA",    # flake8-eradicate (dead code)
+    "FBT",    # flake8-boolean-trap
+    "C4",     # flake8-comprehensions (comprehension optimizations)
+    "ASYNC",  # flake8-asyncio (asyncio best practices)
+    "FIX",    # flake8-fixme (check fixme comments)
+    "TD",     # flake8-todo (check todo comments)
+    "EM",     # flake8-error-messages (error messages)
+    "Q",      # flake8-quotes (string quotes)
+    "PTH",    # flake8-pathlib (pathlib usage)
+    "RUF",    # ruff (general ruff rules)
+    "TRY",    # tryceratops (try-except best practices)
+]
+ignore = [
+    "D211",
+    "D213",
+    "D203" # Docs check that clashes with Black.
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+    "S101", # Avoid using `assert` statements in tests.
+    "D", # Ignore docstring conventions.
+    "PLR2004", # Ignore Magic Numbers Warnings.
+    "ARG", # Ignore unused arguments in tests.
+    "ANN", # Ignore type annotations in tests.
+]
+"src/bin/*" = [
+    "ALL" # Ignore all rules for bin scripts. These are just for quick testing.
+]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "--cov=amok --cov-report=term-missing"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+omit = [
+    "*/tests/*",
+    "*/test_*",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "@abstractmethod",
+]
