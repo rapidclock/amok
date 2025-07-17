@@ -1,6 +1,6 @@
 [project]
 name = "amok"
-version = "0.1.1-beta1"
+version = "0.1.1-beta2"
 description = "Create OpenAI API Compatible, Task driven agents."
 authors = [
     { name = "rapidclock", email = "rapidclock@users.noreply.github.com" }

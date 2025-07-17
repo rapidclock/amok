@@ -55,7 +55,7 @@ class OptionAgent(ActionAgent):
         super().__init__(settings)
         self.options = settings.options if settings.options else []
         # Add the Default "None" option, This is the escape hatch for the agent.
-        self.options.append("None : None")
+        self.options.append("None")
 
     @classmethod
     def _get_settings_class(cls) -> type[AgentSettings]:
