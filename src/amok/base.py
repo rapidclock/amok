@@ -170,7 +170,8 @@ class BaseAgent(ABC):
         """
         final_system_prompt = "\n".join(
             [
-                f"{{'reasoning': {bool(self.is_thinking_agent)}}}",
+                f"detailed thinking {'on' if self.is_thinking_agent else 'off'}",
+                f"<think>{'</think>' if not self.is_thinking_agent else ''}",
                 self.compose_system_prompt(),
             ],
         )

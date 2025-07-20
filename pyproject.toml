@@ -1,6 +1,6 @@
 [project]
 name = "amok"
-version = "0.1.1-beta2"
+version = "0.1.1-b3"
 description = "Create OpenAI API Compatible, Task driven agents."
 authors = [
     { name = "rapidclock", email = "rapidclock@users.noreply.github.com" }
@@ -118,4 +118,5 @@ exclude_lines = [
     "raise NotImplementedError",
     "if __name__ == .__main__.:",
     "@abstractmethod",
+    "if TYPE_CHECKING:",
 ]
