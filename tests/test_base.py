@@ -75,7 +75,10 @@ def test_run_success(monkeypatch):
     agent.openai_client.chat.completions.create.assert_called_once_with(
         model=settings.model,
         messages=[
-            {"role": "system", "content": "{'reasoning': True}\nsystem prompt"},
+            {
+                "role": "system",
+                "content": "detailed thinking on\n<think>\nsystem prompt",
+            },
             {"role": "user", "content": "user prompt\n<BODY>\ntest body\n</BODY>"},
         ],
         temperature=settings.temperature,
@@ -102,7 +105,10 @@ def test_run_success_no_body(monkeypatch):
     agent.openai_client.chat.completions.create.assert_called_once_with(
         model=settings.model,
         messages=[
-            {"role": "system", "content": "{'reasoning': True}\nsystem prompt"},
+            {
+                "role": "system",
+                "content": "detailed thinking on\n<think>\nsystem prompt",
+            },
             {"role": "user", "content": "user prompt\n"},
         ],
         temperature=settings.temperature,

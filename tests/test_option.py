@@ -33,7 +33,7 @@ def test_option_agent_init():
     assert agent.description == "Test description"
     assert "command1" in agent.commands
     assert "command2" in agent.commands
-    assert agent.options == ["option1", "option2", "option3", "None : None"]
+    assert agent.options == ["option1", "option2", "option3", "None"]
     assert agent.openai_client is not None
     assert agent.model == settings.model
     assert agent.temperature == settings.temperature
@@ -50,7 +50,7 @@ def test_option_agent_init_no_options():
     settings = make_option_settings(options=None)
     agent = OptionAgent(settings)
 
-    assert agent.options == ["None : None"]
+    assert agent.options == ["None"]
 
 
 def test_option_agent_init_empty_options():
@@ -58,7 +58,7 @@ def test_option_agent_init_empty_options():
     settings = make_option_settings(options=[])
     agent = OptionAgent(settings)
 
-    assert agent.options == ["None : None"]
+    assert agent.options == ["None"]
 
 
 def test_option_agent_init_thinking_mode_false():

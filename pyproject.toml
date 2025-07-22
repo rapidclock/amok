@@ -1,6 +1,6 @@
 [project]
 name = "amok"
-version = "0.1.0"
+version = "0.1.1"
 description = "Create OpenAI API Compatible, Task driven agents."
 authors = [
     { name = "rapidclock", email = "rapidclock@users.noreply.github.com" }
@@ -8,12 +8,14 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "openai==1.93.0",
+    "openai==1.97.0",
+    "httpx==0.28.1",
     "PyYAML==6.0.2",
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
+    "License :: OSI Approved :: Apache-2.0",
 ]
 license-files = [
     "LICENSE.txt",
@@ -26,7 +28,7 @@ Repository = "https://github.com/rapidclock/amok"
 [project.optional-dependencies]
 dev = [
     "black==25.1.0",
-    "ruff===0.12.2",
+    "ruff==0.12.3",
     "pytest==8.4.1",
     "pytest-cov==6.2.1",
 ]
@@ -117,4 +119,5 @@ exclude_lines = [
     "raise NotImplementedError",
     "if __name__ == .__main__.:",
     "@abstractmethod",
+    "if TYPE_CHECKING:",
 ]
