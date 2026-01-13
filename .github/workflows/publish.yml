@@ -1,0 +1,59 @@
+name: Publish to PyPI
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_env:
+        description: 'Environment to publish to'
+        required: true
+        default: 'pypi-test'
+        type: choice
+        options:
+          - pypi-test
+          - pypi-prod
+  release:
+    types: [published]
+
+jobs:
+  build:
+    name: Build distribution
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pypa/build
+        run: python3 -m pip install build --user
+      - name: Build a binary wheel and a source tarball
+        run: python3 -m build
+      - name: Store the distribution packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+  publish-to-pypi:
+    name: Publish to PyPI
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    needs:
+    - build
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.target_env || 'pypi-prod' }}
+      url: ${{ inputs.target_env == 'pypi-test' && 'https://test.pypi.org/p/amok' || 'https://pypi.org/p/amok' }}
+    permissions:
+      id-token: write  # IMPORTANT: mandatory for trusted publishing
+    steps:
+      - name: Download all the dists
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+      - name: Publish distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: ${{ inputs.target_env == 'pypi-test' && 'https://test.pypi.org/legacy/' || '' }}
