@@ -2,15 +2,11 @@
 
 import re
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from typing import Any, Self
 
 import httpx
 from openai import OpenAI
-from openai.types.chat import (
-    ChatCompletion,
-    ChatCompletionSystemMessageParam,
-    ChatCompletionUserMessageParam,
-)
 
 from .config import BaseConfigParser, ConfigParserFactory
 from .lib import AgentResponse, AgentSettings
@@ -26,6 +22,10 @@ class BaseAgent(ABC):
     max_tokens: int
     ssl_verify: bool
     stream: bool
+    api_mode: str
+    tools: list[dict[str, Any]]
+    tool_choice: str | dict[str, Any] | None
+    parallel_tool_calls: bool | None
     is_thinking_agent: bool = True
     body_tag: str = "BODY"
 
@@ -41,6 +41,10 @@ class BaseAgent(ABC):
         self.max_tokens = settings.max_tokens
         self.ssl_verify = settings.ssl_verify
         self.is_thinking_agent = settings.thinking_mode
+        self.api_mode = settings.api_mode
+        self.tools = settings.tools
+        self.tool_choice = settings.tool_choice
+        self.parallel_tool_calls = settings.parallel_tool_calls
         self.stream = False
         http_client = httpx.Client(verify=settings.ssl_verify)
         self.openai_client = OpenAI(
@@ -122,27 +126,85 @@ class BaseAgent(ABC):
         if not self.openai_client:
             msg = "OpenAI client not initialized."
             raise ValueError(msg)
-        completion: ChatCompletion = self.openai_client.chat.completions.create(
-            model=self.model,
-            messages=[
-                ChatCompletionSystemMessageParam(role="system", content=system_prompt),
-                ChatCompletionUserMessageParam(role="user", content=user_prompt),
+        if self.api_mode == "responses":
+            content, tool_calls = self._run_responses(system_prompt, user_prompt)
+        else:
+            content, tool_calls = self._run_chat_completions(system_prompt, user_prompt)
+        if not content and not tool_calls:
+            msg = "No response from the model."
+            raise ValueError(msg)
+        response, thought = self._parse_response(content)
+        return AgentResponse(thought=thought, response=response, tool_calls=tool_calls)
+
+    def _run_chat_completions(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+    ) -> tuple[str, list[dict[str, Any]]]:
+        """Execute a request using the Chat Completions API."""
+        if not self.openai_client:
+            msg = "OpenAI client not initialized."
+            raise ValueError(msg)
+        request_kwargs: dict[str, Any] = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
             ],
-            temperature=self.temperature,
-            max_tokens=self.max_tokens,
-            stream=self.stream,
-        )
+            "temperature": self.temperature,
+            "max_tokens": self.max_tokens,
+            "stream": self.stream,
+        }
+        if self.tools:
+            request_kwargs["tools"] = self.tools
+        if self.tool_choice is not None:
+            request_kwargs["tool_choice"] = self.tool_choice
+        if self.parallel_tool_calls is not None:
+            request_kwargs["parallel_tool_calls"] = self.parallel_tool_calls
+
+        completion = self.openai_client.chat.completions.create(**request_kwargs)
         if (
             not completion
             or not completion.choices
             or not completion.choices[0].message
-            or not completion.choices[0].message.content
         ):
-            msg = "No response from the model."
+            return "", []
+
+        message = completion.choices[0].message
+        content = self._extract_chat_message_text(message.content)
+        tool_calls = self._extract_chat_tool_calls(message.tool_calls)
+        return content, tool_calls
+
+    def _run_responses(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+    ) -> tuple[str, list[dict[str, Any]]]:
+        """Execute a request using the Responses API."""
+        if not self.openai_client:
+            msg = "OpenAI client not initialized."
             raise ValueError(msg)
-        content: str = completion.choices[0].message.content
-        response, thought = self._parse_response(content)
-        return AgentResponse(thought=thought, response=response)
+        request_kwargs: dict[str, Any] = {
+            "model": self.model,
+            "input": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            "temperature": self.temperature,
+            "max_output_tokens": self.max_tokens,
+            "stream": self.stream,
+        }
+        if self.tools:
+            request_kwargs["tools"] = self.tools
+        if self.tool_choice is not None:
+            request_kwargs["tool_choice"] = self.tool_choice
+        if self.parallel_tool_calls is not None:
+            request_kwargs["parallel_tool_calls"] = self.parallel_tool_calls
+
+        response = self.openai_client.responses.create(**request_kwargs)
+        content = self._extract_response_output_text(response)
+        tool_calls = self._extract_response_tool_calls(getattr(response, "output", []))
+        return content, tool_calls
 
     def generate_prompts(self, body: str | None) -> tuple[str, str]:
         """Generate the system and user prompts for the given body.
@@ -223,3 +285,89 @@ class BaseAgent(ABC):
             thought = None
             response = content.strip()
         return response, thought
+
+    @staticmethod
+    def _extract_chat_message_text(content: str | list[Any] | None) -> str:
+        """Extract text content from a chat completion message."""
+        if isinstance(content, str):
+            return content
+        if isinstance(content, list):
+            parts: list[str] = []
+            for item in content:
+                text = getattr(item, "text", None)
+                if isinstance(text, str):
+                    parts.append(text)
+                elif isinstance(item, dict):
+                    dict_text = item.get("text")
+                    if isinstance(dict_text, str):
+                        parts.append(dict_text)
+            return "\n".join(parts).strip()
+        return ""
+
+    @staticmethod
+    def _extract_chat_tool_calls(tool_calls: object) -> list[dict[str, Any]]:
+        """Extract normalized tool-call metadata from chat completions output."""
+        if not isinstance(tool_calls, Iterable) or isinstance(tool_calls, str | bytes):
+            return []
+        extracted: list[dict[str, Any]] = []
+        for tool_call in tool_calls:
+            function = getattr(tool_call, "function", None)
+            call_payload: dict[str, Any] = {
+                "id": getattr(tool_call, "id", None),
+                "type": getattr(tool_call, "type", None),
+            }
+            if function is not None:
+                call_payload["name"] = getattr(function, "name", None)
+                call_payload["arguments"] = getattr(function, "arguments", None)
+            extracted.append(call_payload)
+        return extracted
+
+    @staticmethod
+    def _extract_response_output_text(response: object) -> str:
+        """Extract text content from a Responses API result."""
+        output_text = getattr(response, "output_text", None)
+        if isinstance(output_text, str) and output_text.strip():
+            return output_text
+        output_items = getattr(response, "output", [])
+        if not output_items:
+            return ""
+        text_parts: list[str] = []
+        for item in output_items:
+            item_type = getattr(item, "type", None)
+            if item_type != "message":
+                continue
+            content_items = getattr(item, "content", [])
+            for content in content_items:
+                text = getattr(content, "text", None)
+                if isinstance(text, str):
+                    text_parts.append(text)
+                elif isinstance(content, dict):
+                    dict_text = content.get("text")
+                    if isinstance(dict_text, str):
+                        text_parts.append(dict_text)
+        return "\n".join(text_parts).strip()
+
+    @staticmethod
+    def _extract_response_tool_calls(output_items: object) -> list[dict[str, Any]]:
+        """Extract normalized tool-call metadata from Responses API output."""
+        if not isinstance(output_items, Iterable) or isinstance(
+            output_items,
+            str | bytes,
+        ):
+            return []
+        extracted: list[dict[str, Any]] = []
+        for item in output_items:
+            item_type = getattr(item, "type", None)
+            if item_type not in {"function_call", "function_tool_call"}:
+                continue
+            extracted.append(
+                {
+                    "id": getattr(item, "id", None),
+                    "type": item_type,
+                    "name": getattr(item, "name", None),
+                    "arguments": getattr(item, "arguments", None),
+                    "call_id": getattr(item, "call_id", None),
+                    "status": getattr(item, "status", None),
+                },
+            )
+        return extracted

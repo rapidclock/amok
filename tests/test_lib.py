@@ -19,6 +19,10 @@ def test_agent_settings_defaults():
     assert s.temperature == 0.7
     assert s.max_tokens == 1000
     assert s.ssl_verify is True
+    assert s.api_mode == "chat.completions"
+    assert s.tools == []
+    assert s.tool_choice is None
+    assert s.parallel_tool_calls is None
 
 
 def test_agent_settings_custom_values():
@@ -49,9 +53,11 @@ def test_agent_response_fields():
     r = AgentResponse(thought="t", response="r")
     assert r.thought == "t"
     assert r.response == "r"
+    assert r.tool_calls == []
     r2 = AgentResponse(thought=None, response="foo")
     assert r2.thought is None
     assert r2.response == "foo"
+    assert r2.tool_calls == []
 
 
 def test_agent_response_repr_and_eq():

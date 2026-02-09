@@ -2,6 +2,7 @@ import json
 
 # Add import for config testing
 import tempfile
+from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
@@ -87,6 +88,56 @@ def test_run_success(monkeypatch):
     )
 
 
+def test_run_success_with_chat_tool_calls():
+    settings = make_settings()
+    settings.tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": "lookup_weather",
+                "description": "Get weather",
+                "parameters": {"type": "object", "properties": {}},
+            },
+        },
+    ]
+    settings.tool_choice = "auto"
+    settings.parallel_tool_calls = True
+    agent = DummyAgent(settings)
+    mock_completion = MagicMock()
+    mock_choice = MagicMock()
+    mock_choice.message.content = ""
+    mock_choice.message.tool_calls = [
+        SimpleNamespace(
+            id="call_123",
+            type="function",
+            function=SimpleNamespace(
+                name="lookup_weather",
+                arguments='{"city":"NYC"}',
+            ),
+        ),
+    ]
+    mock_completion.choices = [mock_choice]
+    agent.openai_client.chat.completions.create = MagicMock(
+        return_value=mock_completion,
+    )
+
+    resp = agent.run(body="test body")
+
+    assert resp.response == ""
+    assert resp.thought is None
+    assert len(resp.tool_calls) == 1
+    assert resp.tool_calls[0]["type"] == "function"
+    assert resp.tool_calls[0]["id"] == "call_123"
+    assert resp.tool_calls[0]["name"] == "lookup_weather"
+    assert resp.tool_calls[0]["arguments"] == '{"city":"NYC"}'
+
+    agent.openai_client.chat.completions.create.assert_called_once()
+    call_kwargs = agent.openai_client.chat.completions.create.call_args.kwargs
+    assert call_kwargs["tools"] == settings.tools
+    assert call_kwargs["tool_choice"] == "auto"
+    assert call_kwargs["parallel_tool_calls"] is True
+
+
 def test_run_success_no_body(monkeypatch):
     """Test run method when no body is provided."""
     settings = make_settings()
@@ -115,6 +166,81 @@ def test_run_success_no_body(monkeypatch):
         max_tokens=settings.max_tokens,
         stream=False,
     )
+
+
+def test_run_success_responses_api():
+    """Test run method when configured to use the Responses API."""
+    settings = make_settings()
+    settings.api_mode = "responses"
+    agent = DummyAgent(settings)
+    mock_response = MagicMock()
+    mock_response.output_text = "<think>think</think>response"
+    mock_response.output = []
+    agent.openai_client.responses.create = MagicMock(return_value=mock_response)
+
+    resp = agent.run(body="test body")
+
+    assert isinstance(resp, AgentResponse)
+    assert resp.thought == "think"
+    assert resp.response == "response"
+    assert resp.tool_calls == []
+    agent.openai_client.responses.create.assert_called_once_with(
+        model=settings.model,
+        input=[
+            {
+                "role": "system",
+                "content": "detailed thinking on\n<think>\nsystem prompt",
+            },
+            {"role": "user", "content": "user prompt\n<BODY>\ntest body\n</BODY>"},
+        ],
+        temperature=settings.temperature,
+        max_output_tokens=settings.max_tokens,
+        stream=False,
+    )
+
+
+def test_run_success_responses_api_tool_calls_only():
+    """Test run method for Responses API with tool calls and no text output."""
+    settings = make_settings()
+    settings.api_mode = "responses"
+    settings.tools = [
+        {
+            "type": "function",
+            "name": "lookup_weather",
+            "description": "Get weather",
+            "parameters": {"type": "object", "properties": {}},
+        },
+    ]
+    settings.tool_choice = "auto"
+    settings.parallel_tool_calls = True
+    agent = DummyAgent(settings)
+    mock_response = MagicMock()
+    mock_response.output_text = ""
+    mock_response.output = [
+        SimpleNamespace(
+            type="function_call",
+            id="fc_1",
+            name="lookup_weather",
+            arguments='{"city":"NYC"}',
+            call_id="call_1",
+            status="completed",
+        ),
+    ]
+    agent.openai_client.responses.create = MagicMock(return_value=mock_response)
+
+    resp = agent.run(body="test body")
+
+    assert resp.response == ""
+    assert resp.thought is None
+    assert len(resp.tool_calls) == 1
+    assert resp.tool_calls[0]["type"] == "function_call"
+    assert resp.tool_calls[0]["name"] == "lookup_weather"
+    assert resp.tool_calls[0]["arguments"] == '{"city":"NYC"}'
+    agent.openai_client.responses.create.assert_called_once()
+    call_kwargs = agent.openai_client.responses.create.call_args.kwargs
+    assert call_kwargs["tools"] == settings.tools
+    assert call_kwargs["tool_choice"] == "auto"
+    assert call_kwargs["parallel_tool_calls"] is True
 
 
 def test_run_no_openai_client():
@@ -266,6 +392,10 @@ def test_validated_settings_success():
         "max_tokens": 1500,
         "ssl_verify": True,
         "thinking_mode": True,
+        "api_mode": "responses",
+        "tools": [{"type": "function", "name": "lookup_weather"}],
+        "tool_choice": "auto",
+        "parallel_tool_calls": True,
         "extra_field": "should_be_ignored",
     }
 
@@ -280,6 +410,10 @@ def test_validated_settings_success():
         "max_tokens",
         "ssl_verify",
         "thinking_mode",
+        "api_mode",
+        "tools",
+        "tool_choice",
+        "parallel_tool_calls",
     }
     assert set(validated.keys()) == expected_fields
     assert validated["base_url"] == "http://test.com"

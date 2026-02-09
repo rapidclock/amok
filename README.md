@@ -14,6 +14,32 @@ There are currently the below types of agents:
 
 You can create your own agent type by sub-classing the `BaseAgent`.
 
+## API Modes
+`amok` now supports both OpenAI-compatible request styles:
+1. `chat.completions` (default)
+2. `responses`
+
+Set `api_mode` in your settings/config:
+```toml
+api_mode = "responses"
+```
+
+## Tool Calling
+You can provide tool schemas and tool behavior controls in agent settings:
+```toml
+api_mode = "responses"
+tool_choice = "auto"
+parallel_tool_calls = true
+
+[[tools]]
+type = "function"
+name = "lookup_weather"
+description = "Get weather by city"
+parameters = { type = "object", properties = { city = { type = "string" } }, required = ["city"] }
+```
+
+Tool calls are returned in `AgentResponse.tool_calls` as normalized dictionaries.
+
 ## Create Agent from a Config File.
 You can easily spin up agents from a config file.
 
