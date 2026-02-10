@@ -1,6 +1,6 @@
 [project]
 name = "amok"
-version = "0.1.1"
+version = "0.2.1"
 description = "Create OpenAI API Compatible, Task driven agents."
 authors = [
     { name = "rapidclock", email = "rapidclock@users.noreply.github.com" }
@@ -16,6 +16,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
+license = "Apache-2.0"
 license-files = [
     "LICENSE.txt",
 ]

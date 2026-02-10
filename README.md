@@ -14,6 +14,75 @@ There are currently the below types of agents:
 
 You can create your own agent type by sub-classing the `BaseAgent`.
 
+## API Modes
+`amok` now supports both OpenAI-compatible request styles:
+1. `chat.completions` (default)
+2. `responses`
+
+Set `api_mode` in your settings/config:
+```toml
+api_mode = "responses"
+```
+
+## Tool Calling
+You can provide tool schemas and tool behavior controls in agent settings:
+```toml
+api_mode = "responses"
+tool_choice = "auto"
+parallel_tool_calls = true
+
+[[tools]]
+type = "function"
+name = "lookup_weather"
+description = "Get weather by city"
+parameters = { type = "object", properties = { city = { type = "string" } }, required = ["city"] }
+```
+
+### Tool Schema By `api_mode`
+Function tools use different native wire formats per API mode:
+- `chat.completions` expects a nested `function` object.
+- `responses` expects top-level `name`/`description`/`parameters`.
+
+`amok` accepts either shape and normalizes to the correct wire format for the selected `api_mode`.
+
+`chat.completions` native shape:
+```toml
+[[tools]]
+type = "function"
+function = { name = "lookup_weather", description = "Get weather by city", parameters = { type = "object", properties = { city = { type = "string" } }, required = ["city"] } }
+```
+
+`responses` native shape:
+```toml
+[[tools]]
+type = "function"
+name = "lookup_weather"
+description = "Get weather by city"
+parameters = { type = "object", properties = { city = { type = "string" } }, required = ["city"] }
+```
+
+### Tool Control Fields
+- `tool_choice` is forwarded as-is to the underlying API.
+- `parallel_tool_calls` is forwarded as-is when not `None`.
+- If `tools` is empty, tool calling is disabled.
+
+### Returned Tool Calls
+Tool calls are returned in `AgentResponse.tool_calls` as normalized dictionaries.
+
+Normalized keys you may receive:
+- `id`
+- `type`
+- `name`
+- `arguments`
+- `call_id` (responses API)
+- `status` (responses API)
+
+### Expected Flow
+1. Call `agent.run(body)` with tools configured.
+2. If `response.tool_calls` is non-empty, execute those tools in your app.
+3. Send tool outputs back to your model endpoint (for responses-style tool loop).
+4. Use the follow-up model output as the final user-visible answer.
+
 ## Create Agent from a Config File.
 You can easily spin up agents from a config file.
 
