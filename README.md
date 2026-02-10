@@ -38,14 +38,21 @@ description = "Get weather by city"
 parameters = { type = "object", properties = { city = { type = "string" } }, required = ["city"] }
 ```
 
-Function tools are accepted in either shape and normalized automatically:
-- `chat.completions` native shape:
+### Tool Schema By `api_mode`
+Function tools use different native wire formats per API mode:
+- `chat.completions` expects a nested `function` object.
+- `responses` expects top-level `name`/`description`/`parameters`.
+
+`amok` accepts either shape and normalizes to the correct wire format for the selected `api_mode`.
+
+`chat.completions` native shape:
 ```toml
 [[tools]]
 type = "function"
 function = { name = "lookup_weather", description = "Get weather by city", parameters = { type = "object", properties = { city = { type = "string" } }, required = ["city"] } }
 ```
-- `responses` native shape:
+
+`responses` native shape:
 ```toml
 [[tools]]
 type = "function"
@@ -54,7 +61,27 @@ description = "Get weather by city"
 parameters = { type = "object", properties = { city = { type = "string" } }, required = ["city"] }
 ```
 
+### Tool Control Fields
+- `tool_choice` is forwarded as-is to the underlying API.
+- `parallel_tool_calls` is forwarded as-is when not `None`.
+- If `tools` is empty, tool calling is disabled.
+
+### Returned Tool Calls
 Tool calls are returned in `AgentResponse.tool_calls` as normalized dictionaries.
+
+Normalized keys you may receive:
+- `id`
+- `type`
+- `name`
+- `arguments`
+- `call_id` (responses API)
+- `status` (responses API)
+
+### Expected Flow
+1. Call `agent.run(body)` with tools configured.
+2. If `response.tool_calls` is non-empty, execute those tools in your app.
+3. Send tool outputs back to your model endpoint (for responses-style tool loop).
+4. Use the follow-up model output as the final user-visible answer.
 
 ## Create Agent from a Config File.
 You can easily spin up agents from a config file.
