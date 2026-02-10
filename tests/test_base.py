@@ -59,6 +59,60 @@ def test_init_sets_attributes():
     assert agent.stream is False
 
 
+def test_init_rejects_invalid_api_mode():
+    settings = make_settings()
+    settings.api_mode = "response"
+    with pytest.raises(ValueError, match="Unsupported api_mode"):
+        DummyAgent(settings)
+
+
+def test_init_normalizes_flat_function_tools_for_chat_mode():
+    settings = make_settings()
+    settings.tools = [
+        {
+            "type": "function",
+            "name": "lookup_weather",
+            "description": "Get weather",
+            "parameters": {"type": "object", "properties": {}},
+        },
+    ]
+    agent = DummyAgent(settings)
+    assert agent.tools == [
+        {
+            "type": "function",
+            "function": {
+                "name": "lookup_weather",
+                "description": "Get weather",
+                "parameters": {"type": "object", "properties": {}},
+            },
+        },
+    ]
+
+
+def test_init_normalizes_nested_function_tools_for_responses_mode():
+    settings = make_settings()
+    settings.api_mode = "responses"
+    settings.tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": "lookup_weather",
+                "description": "Get weather",
+                "parameters": {"type": "object", "properties": {}},
+            },
+        },
+    ]
+    agent = DummyAgent(settings)
+    assert agent.tools == [
+        {
+            "type": "function",
+            "name": "lookup_weather",
+            "description": "Get weather",
+            "parameters": {"type": "object", "properties": {}},
+        },
+    ]
+
+
 def test_run_success(monkeypatch):
     settings = make_settings()
     agent = DummyAgent(settings)
@@ -136,6 +190,38 @@ def test_run_success_with_chat_tool_calls():
     assert call_kwargs["tools"] == settings.tools
     assert call_kwargs["tool_choice"] == "auto"
     assert call_kwargs["parallel_tool_calls"] is True
+
+
+def test_run_success_with_chat_tool_calls_as_dict_items():
+    settings = make_settings()
+    agent = DummyAgent(settings)
+    mock_completion = MagicMock()
+    mock_choice = MagicMock()
+    mock_choice.message.content = ""
+    mock_choice.message.tool_calls = [
+        {
+            "id": "call_456",
+            "type": "function",
+            "function": {
+                "name": "lookup_weather",
+                "arguments": '{"city":"Boston"}',
+            },
+        },
+    ]
+    mock_completion.choices = [mock_choice]
+    agent.openai_client.chat.completions.create = MagicMock(
+        return_value=mock_completion,
+    )
+
+    resp = agent.run(body="test body")
+
+    assert resp.response == ""
+    assert resp.thought is None
+    assert len(resp.tool_calls) == 1
+    assert resp.tool_calls[0]["id"] == "call_456"
+    assert resp.tool_calls[0]["type"] == "function"
+    assert resp.tool_calls[0]["name"] == "lookup_weather"
+    assert resp.tool_calls[0]["arguments"] == '{"city":"Boston"}'
 
 
 def test_run_success_no_body(monkeypatch):

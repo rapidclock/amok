@@ -40,11 +40,11 @@ jobs:
     name: Publish to PyPI
     if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
     needs:
-    - build
+      - build
     runs-on: ubuntu-latest
     environment:
-      name: ${{ inputs.target_env || 'pypi-prod' }}
-      url: ${{ inputs.target_env == 'pypi-test' && 'https://test.pypi.org/p/amok' || 'https://pypi.org/p/amok' }}
+      name: ${{ github.event_name == 'workflow_dispatch' && inputs.target_env || 'pypi-prod' }}
+      url: ${{ github.event_name == 'workflow_dispatch' && inputs.target_env == 'pypi-test' && 'https://test.pypi.org/p/amok' || 'https://pypi.org/p/amok' }}
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
     steps:
@@ -53,7 +53,11 @@ jobs:
         with:
           name: python-package-distributions
           path: dist/
-      - name: Publish distribution to PyPI
+      - name: Publish distribution to TestPyPI
+        if: github.event_name == 'workflow_dispatch' && inputs.target_env == 'pypi-test'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          repository-url: ${{ inputs.target_env == 'pypi-test' && 'https://test.pypi.org/legacy/' || '' }}
+          repository-url: https://test.pypi.org/legacy/
+      - name: Publish distribution to PyPI
+        if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.target_env == 'pypi-prod')
+        uses: pypa/gh-action-pypi-publish@release/v1

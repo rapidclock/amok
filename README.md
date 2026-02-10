@@ -38,6 +38,22 @@ description = "Get weather by city"
 parameters = { type = "object", properties = { city = { type = "string" } }, required = ["city"] }
 ```
 
+Function tools are accepted in either shape and normalized automatically:
+- `chat.completions` native shape:
+```toml
+[[tools]]
+type = "function"
+function = { name = "lookup_weather", description = "Get weather by city", parameters = { type = "object", properties = { city = { type = "string" } }, required = ["city"] } }
+```
+- `responses` native shape:
+```toml
+[[tools]]
+type = "function"
+name = "lookup_weather"
+description = "Get weather by city"
+parameters = { type = "object", properties = { city = { type = "string" } }, required = ["city"] }
+```
+
 Tool calls are returned in `AgentResponse.tool_calls` as normalized dictionaries.
 
 ## Create Agent from a Config File.

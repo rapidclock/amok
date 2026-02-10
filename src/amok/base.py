@@ -28,6 +28,7 @@ class BaseAgent(ABC):
     parallel_tool_calls: bool | None
     is_thinking_agent: bool = True
     body_tag: str = "BODY"
+    supported_api_modes: tuple[str, ...] = ("chat.completions", "responses")
 
     def __init__(self, settings: AgentSettings) -> None:
         """Initialize the agent with the given settings.
@@ -41,8 +42,14 @@ class BaseAgent(ABC):
         self.max_tokens = settings.max_tokens
         self.ssl_verify = settings.ssl_verify
         self.is_thinking_agent = settings.thinking_mode
+        if settings.api_mode not in self.supported_api_modes:
+            msg = (
+                f"Unsupported api_mode '{settings.api_mode}'. "
+                f"Supported values are: {', '.join(self.supported_api_modes)}."
+            )
+            raise ValueError(msg)
         self.api_mode = settings.api_mode
-        self.tools = settings.tools
+        self.tools = self._normalize_tools(settings.tools)
         self.tool_choice = settings.tool_choice
         self.parallel_tool_calls = settings.parallel_tool_calls
         self.stream = False
@@ -312,13 +319,24 @@ class BaseAgent(ABC):
         extracted: list[dict[str, Any]] = []
         for tool_call in tool_calls:
             function = getattr(tool_call, "function", None)
+            if function is None and isinstance(tool_call, dict):
+                function = tool_call.get("function")
             call_payload: dict[str, Any] = {
                 "id": getattr(tool_call, "id", None),
                 "type": getattr(tool_call, "type", None),
             }
+            if isinstance(tool_call, dict):
+                if "id" in tool_call:
+                    call_payload["id"] = tool_call.get("id")
+                if "type" in tool_call:
+                    call_payload["type"] = tool_call.get("type")
             if function is not None:
-                call_payload["name"] = getattr(function, "name", None)
-                call_payload["arguments"] = getattr(function, "arguments", None)
+                if isinstance(function, dict):
+                    call_payload["name"] = function.get("name")
+                    call_payload["arguments"] = function.get("arguments")
+                else:
+                    call_payload["name"] = getattr(function, "name", None)
+                    call_payload["arguments"] = getattr(function, "arguments", None)
             extracted.append(call_payload)
         return extracted
 
@@ -371,3 +389,49 @@ class BaseAgent(ABC):
                 },
             )
         return extracted
+
+    def _normalize_tools(self, tools: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        """Normalize function-tool payloads for the selected API mode.
+
+        Supports both of these input shapes:
+        - Chat shape: {"type":"function","function":{"name":"...","parameters":{...}}}
+        - Responses shape: {"type":"function","name":"...","parameters":{...}}
+        """
+        if not tools:
+            return []
+        normalized: list[dict[str, Any]] = []
+        for tool in tools:
+            normalized.append(self._normalize_single_tool(tool))
+        return normalized
+
+    def _normalize_single_tool(self, tool: dict[str, Any]) -> dict[str, Any]:
+        """Normalize one tool payload based on api mode."""
+        if not isinstance(tool, dict) or tool.get("type") != "function":
+            return tool
+        if self.api_mode == "chat.completions":
+            return self._normalize_function_tool_for_chat(tool)
+        return self._normalize_function_tool_for_responses(tool)
+
+    @staticmethod
+    def _normalize_function_tool_for_chat(tool: dict[str, Any]) -> dict[str, Any]:
+        """Convert flat responses-style function tools into chat shape."""
+        function_payload = tool.get("function")
+        if isinstance(function_payload, dict):
+            return tool
+        converted: dict[str, Any] = {"type": "function", "function": {}}
+        for key in ("name", "description", "parameters", "strict"):
+            if key in tool:
+                converted["function"][key] = tool[key]
+        return converted
+
+    @staticmethod
+    def _normalize_function_tool_for_responses(tool: dict[str, Any]) -> dict[str, Any]:
+        """Convert nested chat-style function tools into responses shape."""
+        function_payload = tool.get("function")
+        if not isinstance(function_payload, dict):
+            return tool
+        converted: dict[str, Any] = {"type": "function"}
+        for key in ("name", "description", "parameters", "strict"):
+            if key in function_payload:
+                converted[key] = function_payload[key]
+        return converted
